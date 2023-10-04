@@ -4,7 +4,6 @@
 class Payments::PagseguroService
   require 'pagseguro/helper'
   include Payments::PaymentConcern
-  include PagSeguro
 
   def payment(order, coupon_code)
     amount = debit_amount(order, coupon_code)
@@ -13,7 +12,13 @@ class Payments::PagseguroService
 
     id = PagSeguro::Helper.generate_ref(order, order.statistic_profile.user.id)
 
-    payment_result = PagSeguro::Service.new.create_payment(
+    # payment_result = PagSeguro::Service.new.create_payment(
+    #   amount,
+    #   @id,
+    #   PagSeguro::Helper.generate_sender(order.statistic_profile.user.id),
+    #   PagSeguro::Helper.generate_items(order, order.statistic_profile.user.id)
+    # )
+    payment_result = PagSeguro::Helper.generate_request(
       amount,
       @id,
       PagSeguro::Helper.generate_sender(order.statistic_profile.user.id),

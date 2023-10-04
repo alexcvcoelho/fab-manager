@@ -76,6 +76,81 @@ class PagSeguro::Helper
       items
     end
 
+    def generate_payload(amount, reference, sender, items)
+      body = "
+        <checkout>
+          <sender>
+            <name>#{sender[:name]}</name>
+            <email>#{sender[:email]}</email>
+            <documents>
+              <document>
+                <type>#{sender[:document][:type]}</type>
+                <value>#{sender[:document][:value]}</value>
+              </document>
+            </documents>
+          </sender>
+          <currency>BRL</currency>
+          <items>"
+          items.each do |item|
+            body += "  <item>\n"
+            body += "    <id>#{item[:id]}</id>\n"
+            body += "    <description>#{item[:description]}</description>\n"
+            body += "    <amount>#{format("%.2f", item[:amount])}</amount>\n"
+            body += "    <quantity>#{item[:quantity]}</quantity>\n"
+            body += "  </item>\n"
+          end    
+
+      body += "</items>
+          <redirectURL>https://webhook.site/1b86f0d4-84f2-447f-a93e-d377fb8e9373</redirectURL>
+          <reference>#{reference}</reference>
+          <receiver>
+            <email>#{Setting.get('pagseguro_email')}</email>
+          </receiver>
+        </checkout>
+      "
+      body
+    end
+
+    def make_pagseguro_request(payload)
+      require 'net/http'
+      require 'uri'
+      endpoint = "https://ws.sandbox.pagseguro.uol.com.br/v2/checkout"
+      email = Setting.get('pagseguro_email')
+      token = Setting.get('pagseguro_token')
+
+      uri = URI.parse(endpoint)
+      http = Net::HTTP.new(uri.host, uri.port)
+    
+      request = Net::HTTP::Post.new(uri.path)
+    
+      request.body = payload
+      request.set_form_data({ 'token' => token, 'email' => email })
+      response = http.request(request)
+      
+
+      if response.code.to_i == 200
+        code = extract_code_from_xml(response.body)
+        { code: code, url: "#{endpoint}/payment.html?code=#{code}" }
+      else
+        puts "Erro na requisição POST. Código de resposta: #{response.code}"
+        puts "Erro na requisição POST. Código de resposta: #{response.body}"
+        { error: response.body }
+      end
+    end
+
+    def extract_code_from_xml(xml_string)
+      code_start = xml_string.index("<code>")
+      code_end = xml_string.index("</code>")
+    
+      if code_start && code_end
+        code_start += "<code>".length
+        code = xml_string[code_start...code_end]
+        code.strip
+      else
+        nil
+      end
+    end
+
     private
 
     def generate_document(customer)

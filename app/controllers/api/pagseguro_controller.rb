@@ -20,14 +20,20 @@ class API::PagseguroController < API::PaymentsController
     def create_payment_link
         cart = shopping_cart
         amount = debit_amount(cart)
+
         @id = PagSeguro::Helper.generate_ref(params[:cart_items], params[:customer_id])
-        result = PagSeguro::Service.new.create_payment(
+
+        payload = PagSeguro::Helper.generate_payload(
             amount,
             @id,
             PagSeguro::Helper.generate_sender(params[:customer_id]),
             PagSeguro::Helper.generate_items(params[:cart_items], current_user.id)
         )
-        render json: result.as_json, status: :ok and return       
+        result = PagSeguro::Helper.make_pagseguro_request(payload)
+        if result[:error].present?
+            raise "Houve um erro na comunicação com o gateway, por favor tente mais tarde"
+        end
+        render json: result, status: :ok and return       
     rescue StandardError => e
         render json: e, status: :bad_gateway
     end
