@@ -101,7 +101,7 @@ class PagSeguro::Helper
           end    
 
       body += "</items>
-          <redirectURL>https://webhook.site/1b86f0d4-84f2-447f-a93e-d377fb8e9373</redirectURL>
+          <redirectURL>https://fablab-hmg.casafirjan.com.br/</redirectURL>
           <reference>#{reference}</reference>
           <receiver>
             <email>#{Setting.get('pagseguro_email')}</email>
@@ -114,27 +114,33 @@ class PagSeguro::Helper
     def make_pagseguro_request(payload)
       require 'net/http'
       require 'uri'
-      endpoint = "https://ws.sandbox.pagseguro.uol.com.br/v2/checkout"
+
       email = Setting.get('pagseguro_email')
       token = Setting.get('pagseguro_token')
+      endpoint = "https://ws.sandbox.pagseguro.uol.com.br/v2/checkout"
+      endpoint_redirect = "https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html"
 
-      uri = URI.parse(endpoint)
-      http = Net::HTTP.new(uri.host, uri.port)
-    
-      request = Net::HTTP::Post.new(uri.path)
-    
-      request.body = payload
-      request.set_form_data({ 'token' => token, 'email' => email })
-      response = http.request(request)
+      uri = URI(endpoint)
+      puts uri
+
+      Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+        request = Net::HTTP::Post.new(uri.path.concat("?email=#{email}&token=#{token}"))
+
+        response = http.request request
+        request['Content-Type'] = 'application/xml;charset=ISO-8859-1'
       
+        request.body = payload
+        response = http.request request
 
-      if response.code.to_i == 200
-        code = extract_code_from_xml(response.body)
-        { code: code, url: "#{endpoint}/payment.html?code=#{code}" }
-      else
-        puts "Erro na requisição POST. Código de resposta: #{response.code}"
-        puts "Erro na requisição POST. Código de resposta: #{response.body}"
-        { error: response.body }
+        if response.code.to_i == 200
+          puts "RTESPONSE #{response.body}"
+          code = extract_code_from_xml(response.body)
+          { code: code, url: "#{endpoint_redirect}?code=#{code}" }
+        else
+          puts "Erro na requisição POST. Código de resposta: #{response.code}"
+          puts "Erro na requisição POST. Código de resposta: #{response.body}"
+          { error: response.body }
+        end
       end
     end
 

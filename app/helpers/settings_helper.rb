@@ -196,6 +196,10 @@ module SettingsHelper
     events_banner_cta_active
     events_banner_cta_label
     events_banner_cta_url
+    pagseguro_token
+    pagseguro_email
+    pagseguro_endpoint
+
   ].freeze
 end
 # rubocop:enable Metrics/ModuleLength

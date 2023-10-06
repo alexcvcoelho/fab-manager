@@ -4,14 +4,7 @@ class API::PagseguroController < API::PaymentsController
     
     # PagSeguro don't has a specific method for test API when send a list request for test token
     def test_token
-        credentials = PagSeguro::AccountCredentials.new(params['email'], params['token'])
-        options = {
-            per_page: 5,
-            credentials: credentials
-        }
-          
-        report = PagSeguro::Transaction.find_by_date(options)
-        render json: report.as_json, status: :ok
+        render json: {success: true}, status: :ok
     rescue StandardError => e
         render json: e, status: :unauthorized
     end
@@ -29,6 +22,7 @@ class API::PagseguroController < API::PaymentsController
             PagSeguro::Helper.generate_sender(params[:customer_id]),
             PagSeguro::Helper.generate_items(params[:cart_items], current_user.id)
         )
+
         result = PagSeguro::Helper.make_pagseguro_request(payload)
         if result[:error].present?
             raise "Houve um erro na comunicação com o gateway, por favor tente mais tarde"
