@@ -1,6 +1,9 @@
 class API::PagseguroController < API::PaymentsController
     require 'pagseguro/helper'
     require 'pagseguro/service'
+
+    skip_before_action :authenticate_user!, only: :notify
+    skip_before_action :verify_authenticity_token, only: :notify
     
     # PagSeguro don't has a specific method for test API when send a list request for test token
     def test_token
@@ -30,5 +33,18 @@ class API::PagseguroController < API::PaymentsController
         render json: result, status: :ok and return       
     rescue StandardError => e
         render json: e, status: :bad_gateway
+    end
+
+    def notify
+        render(json: { error: 'Bad gateway or online payment is disabled' }, status: :bad_gateway) and return unless PagSeguro::Helper.enabled?
+        render(status: :ok) and return unless params['notificationType'] == 'transaction'
+
+        result = PagSeguro::Helper.get_transaction_by_code(params['notificationCode'])
+
+        render json: result, status: :ok and return
+    end
+    
+    def on_payment_success(order_id, cart)
+        super(order_id, 'PagSeguro::Transaction', cart)
     end
 end

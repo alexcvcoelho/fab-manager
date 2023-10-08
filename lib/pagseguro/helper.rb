@@ -6,6 +6,9 @@ module PagSeguro; end
 ## Provides various methods around the PagSeguro payment gateway
 class PagSeguro::Helper
   class << self
+    require 'net/http'
+    require 'uri'
+
     ## Is the PagSeguro gateway enabled?
     def enabled?
       return false unless Setting.get('online_payment_module')
@@ -102,6 +105,7 @@ class PagSeguro::Helper
 
       body += "</items>
           <redirectURL>https://fablab-hmg.casafirjan.com.br/</redirectURL>
+          <notificationURL>https://webhook.site/1b86f0d4-84f2-447f-a93e-d377fb8e9373</notificationURL>
           <reference>#{reference}</reference>
           <receiver>
             <email>#{Setting.get('pagseguro_email')}</email>
@@ -112,9 +116,6 @@ class PagSeguro::Helper
     end
 
     def make_pagseguro_request(payload)
-      require 'net/http'
-      require 'uri'
-
       email = Setting.get('pagseguro_email')
       token = Setting.get('pagseguro_token')
       is_production = Setting.get('pagseguro_production')
@@ -164,6 +165,36 @@ class PagSeguro::Helper
       end
     end
 
+    def get_transaction_by_code(code)
+      email = Setting.get('pagseguro_email')
+      token = Setting.get('pagseguro_token')
+      is_production = Setting.get('pagseguro_production')
+
+      if !is_production
+        endpoint = "https://ws.sandbox.pagseguro.uol.com.br/v3/transactions/notifications/"
+      else
+        endpoint = "https://ws.pagseguro.uol.com.br/v3/transactions/notifications/"
+      end
+
+      uri = URI(endpoint)
+      puts uri
+
+      Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+        request = Net::HTTP::Get.new(uri.path.concat("#{code}?email=#{email}&token=#{token}"))
+
+        response = http.request request
+
+        if response.code.to_i == 200
+          puts "RTESPONSE #{response.body}"
+          extract_status_and_code_from_xml(response.body)
+        else
+          puts "Erro na requisição GET. Código de resposta: #{response.code}"
+          puts "Erro na requisição GET. Código de resposta: #{response.body}"
+          { error: response.body }
+        end
+      end
+    end
+
     private
 
     def generate_document(customer)
@@ -171,6 +202,18 @@ class PagSeguro::Helper
         return { type: "CNPJ", value: customer.profile.cpf }
       else
         return { type: "CPF", value: customer.profile.cpf }
+      end
+    end
+
+    def extract_status_and_code_from_xml(xml)
+      status = xml.match(/<status>(.*?)<\/status>/m)&.captures&.first
+      code = xml.match(/<code>(.*?)<\/code>/m)&.captures&.first
+    
+      if status && code
+        result = { "status" => status, "code" => code }
+        return result
+      else
+        return nil
       end
     end
   end
