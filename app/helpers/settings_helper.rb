@@ -198,7 +198,7 @@ module SettingsHelper
     events_banner_cta_url
     pagseguro_token
     pagseguro_email
-    pagseguro_endpoint
+    pagseguro_production
 
   ].freeze
 end

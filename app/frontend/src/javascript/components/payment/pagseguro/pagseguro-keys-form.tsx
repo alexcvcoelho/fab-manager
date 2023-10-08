@@ -5,9 +5,10 @@ import { FabInput } from '../../base/fab-input';
 import { Loader } from '../../base/loader';
 import SettingAPI from '../../../api/setting';
 import PagseguroAPI from '../../../api/pagseguro';
+import Switch from 'react-switch';
 
 interface PagseguroKeysFormProps {
-  onValidKeys: (token: string, email: string) => void,
+  onValidKeys: (token: string, email: string, isProduction: boolean) => void,
   onInvalidKeys: () => void,
 }
 
@@ -20,6 +21,8 @@ const PagseguroKeysForm: React.FC<PagseguroKeysFormProps> = ({ onValidKeys, onIn
   // used to prevent promises from resolving if the component was unmounted
   const mounted = useRef(false);
 
+  // PagSeguro environment
+  const [isProduction, setIsProduction] = useState<boolean>(false);
   // PagSeguro token
   const [token, setToken] = useState<string>('');
   // Style class for add-on token
@@ -40,9 +43,10 @@ const PagseguroKeysForm: React.FC<PagseguroKeysFormProps> = ({ onValidKeys, onIn
   useEffect(() => {
     mounted.current = true;
 
-    SettingAPI.query(['pagseguro_token', 'pagseguro_email']).then(pagseguroKeys => {
+    SettingAPI.query(['pagseguro_token', 'pagseguro_email', 'pagseguro_production']).then(pagseguroKeys => {
       setToken(pagseguroKeys.get('pagseguro_token'));
       setEmail(pagseguroKeys.get('pagseguro_email'));
+      setIsProduction(pagseguroKeys.get('pagseguro_production') === 'true');
     }).catch(error => console.error(error));
 
     // when the component unmounts, mark it as unmounted
@@ -58,7 +62,7 @@ const PagseguroKeysForm: React.FC<PagseguroKeysFormProps> = ({ onValidKeys, onIn
   useEffect(() => {
     const validClassName = 'key-valid';
     if (tokenAddOnClassName === validClassName && emailAddOnClassName === validClassName) {
-      onValidKeys(token, email);
+      onValidKeys(token, email, isProduction);
     } else {
       onInvalidKeys();
     }
@@ -114,6 +118,14 @@ const PagseguroKeysForm: React.FC<PagseguroKeysFormProps> = ({ onValidKeys, onIn
         <HtmlTranslate trKey="app.admin.invoices.pagseguro_keys_form.pagseguro_keys_info_html" />
       </div>
       <form name="pagseguroKeysForm">
+      <div className="pagseguro-secret-input">
+          <label htmlFor="pagseguro_production">{ t('app.admin.invoices.pagseguro_keys_form.is_production') }</label>
+          <Switch id="pagseguro_production"
+            checked={isProduction}
+            className="switch"
+            onChange={(val) => setIsProduction(val)}
+          />
+      </div>
       <div className="pagseguro-secret-input">
           <label htmlFor="pagseguro_email">{ t('app.admin.invoices.pagseguro_keys_form.email') } *</label>
           <FabInput id="pagseguro_email"

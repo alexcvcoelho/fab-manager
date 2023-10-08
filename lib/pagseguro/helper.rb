@@ -117,8 +117,15 @@ class PagSeguro::Helper
 
       email = Setting.get('pagseguro_email')
       token = Setting.get('pagseguro_token')
-      endpoint = "https://ws.sandbox.pagseguro.uol.com.br/v2/checkout"
-      endpoint_redirect = "https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html"
+      is_production = Setting.get('pagseguro_production')
+
+      if !is_production
+        endpoint = "https://ws.sandbox.pagseguro.uol.com.br/v2/checkout"
+        endpoint_redirect = "https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html"
+      else
+        endpoint = "https://ws.pagseguro.uol.com.br/v2/checkout"
+        endpoint_redirect = "https://pagseguro.uol.com.br/v2/checkout/payment.html"
+      end
 
       uri = URI(endpoint)
       puts uri
