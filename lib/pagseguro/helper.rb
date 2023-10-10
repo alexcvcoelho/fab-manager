@@ -207,10 +207,10 @@ class PagSeguro::Helper
 
     def extract_status_and_code_from_xml(xml)
       status = xml.match(/<status>(.*?)<\/status>/m)&.captures&.first
-      code = xml.match(/<code>(.*?)<\/code>/m)&.captures&.first
+      code = xml.match(/<reference>(.*?)<\/reference>/m)&.captures&.first
     
       if status && code
-        result = { "status" => status, "code" => code }
+        result = { status: status, code: code }
         return result
       else
         return nil

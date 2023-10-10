@@ -1,6 +1,7 @@
 class API::PagseguroController < API::PaymentsController
     require 'pagseguro/helper'
     require 'pagseguro/service'
+    require 'json'
 
     skip_before_action :authenticate_user!, only: :notify
     skip_before_action :verify_authenticity_token, only: :notify
@@ -30,6 +31,12 @@ class API::PagseguroController < API::PaymentsController
         if result[:error].present?
             raise "Houve um erro na comunicação com o gateway, por favor tente mais tarde"
         end
+
+        puts "PASSOU"
+        @pagseguro_intent = PagseguroIntent.new(reference_code: @id, payment_code: result[:code], shopping_cart: cart.to_json, status: "pending")
+        @pagseguro_intent.save
+
+        #render on_payment_success(@id, cart)
         render json: result, status: :ok and return       
     rescue StandardError => e
         render json: e, status: :bad_gateway
@@ -40,8 +47,21 @@ class API::PagseguroController < API::PaymentsController
         render(status: :ok) and return unless params['notificationType'] == 'transaction'
 
         result = PagSeguro::Helper.get_transaction_by_code(params['notificationCode'])
+        render(status: :ok) and return unless result[:status] == "3"
 
-        render json: result, status: :ok and return
+        pagseguro_intent = PagseguroIntent.find_by(reference_code: result[:code])
+
+        cart_hash = JSON.parse(pagseguro_intent[:shopping_cart], symbolize_names: true)
+        puts cart_hash
+
+        @user = User.find(cart_hash[:operator][:id])
+        cs = CartService.new(@user)
+        cart = cs.from_hash(cart_hash)
+
+        pagseguro_intent.status = 'paid'
+        pagseguro_intent.save
+
+        render on_payment_success(result[:code], cart)
     end
     
     def on_payment_success(order_id, cart)
