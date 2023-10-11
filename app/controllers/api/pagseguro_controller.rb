@@ -16,8 +16,6 @@ class API::PagseguroController < API::PaymentsController
     # Create a request payment and return a object  with url for redirect to payment checkout
     def create_payment_link
         cart = shopping_cart
-
-
         amount = debit_amount(cart)
 
         @id = PagSeguro::Helper.generate_ref(params[:cart_items], params[:customer_id])
@@ -26,7 +24,8 @@ class API::PagseguroController < API::PaymentsController
             amount,
             @id,
             PagSeguro::Helper.generate_sender(params[:customer_id]),
-            PagSeguro::Helper.generate_items(params[:cart_items], current_user.id)
+            PagSeguro::Helper.generate_items(params[:cart_items], current_user.id),
+            root_url
         )
 
         result = PagSeguro::Helper.make_pagseguro_request(payload)

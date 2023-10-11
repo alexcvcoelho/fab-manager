@@ -79,7 +79,7 @@ class PagSeguro::Helper
       items
     end
 
-    def generate_payload(amount, reference, sender, items)
+    def generate_payload(amount, reference, sender, items, root_url)
       body = "
         <checkout>
           <sender>
@@ -104,8 +104,8 @@ class PagSeguro::Helper
           end    
 
       body += "</items>
-          <redirectURL>https://fablab-hmg.casafirjan.com.br/</redirectURL>
-          <notificationURL>https://webhook.site/1b86f0d4-84f2-447f-a93e-d377fb8e9373</notificationURL>
+          <redirectURL>#{root_url}</redirectURL>
+          <notificationURL>#{root_url}api/pagseguro/notify</notificationURL>
           <reference>#{reference}</reference>
           <receiver>
             <email>#{Setting.get('pagseguro_email')}</email>
