@@ -149,6 +149,8 @@ class CartService
   end
 
   def reservable_from_hash(cart_item, plan_info)
+    puts "RESERVABLE FROM HASH"
+    puts cart_item
     reservable = cart_item[:reservable_type]&.constantize&.find(cart_item[:reservable_id])
     case reservable
     when Machine

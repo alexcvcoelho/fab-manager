@@ -16,6 +16,8 @@ class API::PagseguroController < API::PaymentsController
     # Create a request payment and return a object  with url for redirect to payment checkout
     def create_payment_link
         cart = shopping_cart
+
+
         amount = debit_amount(cart)
 
         @id = PagSeguro::Helper.generate_ref(params[:cart_items], params[:customer_id])
@@ -33,10 +35,12 @@ class API::PagseguroController < API::PaymentsController
         end
 
         puts "PASSOU"
-        @pagseguro_intent = PagseguroIntent.new(reference_code: @id, payment_code: result[:code], shopping_cart: cart.to_json, status: "pending")
+        payload = params['pagseguro']['cart_items']
+        payload['operator_id'] = shopping_cart.operator.id
+
+        @pagseguro_intent = PagseguroIntent.new(reference_code: @id, payment_code: result[:code], shopping_cart: payload.to_json, status: "pending")
         @pagseguro_intent.save
 
-        #render on_payment_success(@id, cart)
         render json: result, status: :ok and return       
     rescue StandardError => e
         render json: e, status: :bad_gateway
@@ -52,11 +56,11 @@ class API::PagseguroController < API::PaymentsController
         pagseguro_intent = PagseguroIntent.find_by(reference_code: result[:code])
 
         cart_hash = JSON.parse(pagseguro_intent[:shopping_cart], symbolize_names: true)
-        puts cart_hash
 
-        @user = User.find(cart_hash[:operator][:id])
-        cs = CartService.new(@user)
+        operator = User.find(cart_hash[:operator_id])
+        cs = CartService.new(operator)
         cart = cs.from_hash(cart_hash)
+        puts cart
 
         pagseguro_intent.status = 'paid'
         pagseguro_intent.save
