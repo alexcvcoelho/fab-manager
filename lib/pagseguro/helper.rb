@@ -62,7 +62,7 @@ class PagSeguro::Helper
           items << {
             id: item.orderable_id,
             description: "RESERVA FABLAB",
-            amount: item.amount.to_i * 100,
+            amount: item.amount.to_i,
             quantity: item.quantity.to_i
           }
         end
@@ -73,7 +73,7 @@ class PagSeguro::Helper
         items << {
             id: 1,
             description: item.name,
-            amount: item.price[:amount].to_i / 100.00,
+            amount: item.price[:amount].to_i,
             quantity: 1
         }
       end
