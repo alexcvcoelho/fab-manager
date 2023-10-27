@@ -39,7 +39,7 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
 
   config.action_mailer.perform_caching = false
 
@@ -48,7 +48,7 @@ Rails.application.configure do
     address: Rails.application.secrets.smtp_address,
     port: Rails.application.secrets.smtp_port
   }
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
   config.action_mailer.default_url_options = {
     host: Rails.application.secrets.default_host,
     protocol: Rails.application.secrets.default_protocol

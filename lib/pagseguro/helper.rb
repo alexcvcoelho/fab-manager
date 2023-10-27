@@ -40,6 +40,7 @@ class PagSeguro::Helper
       {
         name: customer.profile.full_name,
         email: customer.email,
+        cpf: customer.profile.cpf,
         document: generate_document(customer)
       }        
     end
@@ -61,7 +62,7 @@ class PagSeguro::Helper
           items << {
             id: item.orderable_id,
             description: "RESERVA FABLAB",
-            amount: item.amount.to_i / 100.00,
+            amount: item.amount.to_i * 100,
             quantity: item.quantity.to_i
           }
         end
@@ -77,6 +78,58 @@ class PagSeguro::Helper
         }
       end
       items
+    end
+
+    def generate_checkout_payload(amount, reference, sender, items, root_url)
+      body = {
+        reference_id: reference,
+        expiration_date: (Time.now + 3600).strftime("%Y-%m-%dT%H:%M:%S%:z"),
+        customer: {
+          tax_id: sender[:cpf],
+          name: sender[:name],
+          email: sender[:email]
+        },
+        customer_modifiable: true,
+        payment_methods: [
+          {
+            type: "credit_card",
+            brands: [
+              "mastercard"
+            ]
+          },
+          {
+            type: "credit_card",
+            brands: [
+              "visa"
+            ]
+          },
+          {
+            type: "debit_card",
+            brands: [
+              "visa"
+            ]
+          },
+          {
+            type: "PIX"
+          },
+          {
+            type: "BOLETO"
+          }
+        ],
+        redirect_url: root_url,
+        return_url: root_url,
+        notification_urls: [
+          "#{root_url}api/pagseguro/notify"
+        ]
+      }
+      body[:items] = items.map { |item| {
+        reference_id: item[:id],
+        name: item[:description],
+        quantity: item[:quantity],
+        unit_amount: item[:amount]
+      }}
+
+      body
     end
 
     def generate_payload(amount, reference, sender, items, root_url)
@@ -144,6 +197,45 @@ class PagSeguro::Helper
           puts "RTESPONSE #{response.body}"
           code = extract_code_from_xml(response.body)
           { code: code, url: "#{endpoint_redirect}?code=#{code}" }
+        else
+          puts "Erro na requisição POST. Código de resposta: #{response.code}"
+          puts "Erro na requisição POST. Código de resposta: #{response.body}"
+          { error: response.body }
+        end
+      end
+    end
+
+    def create_checkout(payload)
+      email = Setting.get('pagseguro_email')
+      token = Setting.get('pagseguro_token')
+      is_production = Setting.get('pagseguro_production')
+
+      if !is_production
+        endpoint = "https://sandbox.api.pagseguro.com/checkouts"
+      else
+        endpoint = "https://api.pagseguro.com/checkouts"
+      end
+
+      uri = URI(endpoint)
+      puts uri
+
+      Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+        request = Net::HTTP::Post.new(uri)
+
+        response = http.request request
+        request['Content-Type'] = "application/json"
+        request['Authorization'] = "Bearer #{token}"
+
+        puts payload
+
+        request.body = payload
+        response = http.request request
+
+        if response.code.to_i == 201
+          puts "RESPONSE #{response.body}"
+          result = JSON.parse(response.body) 
+          pay_url = result['links'].find { |link| link['rel'] == 'PAY' }['href']
+          { url: pay_url, code: pay_url.match(/code=([^&]+)/)[1]}
         else
           puts "Erro na requisição POST. Código de resposta: #{response.code}"
           puts "Erro na requisição POST. Código de resposta: #{response.body}"

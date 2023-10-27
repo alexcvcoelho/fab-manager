@@ -20,7 +20,7 @@ class API::PagseguroController < API::PaymentsController
 
         @id = PagSeguro::Helper.generate_ref(params[:cart_items], params[:customer_id])
 
-        payload = PagSeguro::Helper.generate_payload(
+        payload = PagSeguro::Helper.generate_checkout_payload(
             amount,
             @id,
             PagSeguro::Helper.generate_sender(params[:customer_id]),
@@ -28,7 +28,7 @@ class API::PagseguroController < API::PaymentsController
             root_url
         )
 
-        result = PagSeguro::Helper.make_pagseguro_request(payload)
+        result = PagSeguro::Helper.create_checkout(JSON.generate(payload))
         if result[:error].present?
             raise "Houve um erro na comunicação com o gateway, por favor tente mais tarde"
         end
@@ -49,10 +49,15 @@ class API::PagseguroController < API::PaymentsController
         render(json: { error: 'Bad gateway or online payment is disabled' }, status: :bad_gateway) and return unless PagSeguro::Helper.enabled?
         render(status: :ok) and return unless params['notificationType'] == 'transaction'
 
+        
         result = PagSeguro::Helper.get_transaction_by_code(params['notificationCode'])
         render(status: :ok) and return unless result[:status] == "3"
 
         pagseguro_intent = PagseguroIntent.find_by(reference_code: result[:code])
+
+        if pagseguro_intent.status == "paid"
+            render json: { success: true }, status: :ok and return  
+        end
 
         cart_hash = JSON.parse(pagseguro_intent[:shopping_cart], symbolize_names: true)
 

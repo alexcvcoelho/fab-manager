@@ -3155,10 +3155,10 @@
   resolved "https://registry.yarnpkg.com/@types/angular/-/angular-1.8.1.tgz#940b16476adff7b66608aae778e5e9f1c57ab847"
   integrity sha512-8zEjTC3gpkva6/dbUkiSxIUGUxYm9HD/pJJ0lbqfEM2TWqi/3vs4VtgoFxVXt5bmuJ+6G2caO2HaMD+NzB1VwA==
 
-"@types/angular@^1.7.3":
-  version "1.8.4"
-  resolved "https://registry.yarnpkg.com/@types/angular/-/angular-1.8.4.tgz#a2cc163e508389c51d4c4119ebff6b9395cec472"
-  integrity sha512-wPS/ncJWhyxJsndsW1B6Ta8D4mi97x1yItSu+rkLDytU3oRIh2CFAjMuJceYwFAh9+DIohndWM0QBA9OU2Hv0g==
+"@types/angular@^1.8.7":
+  version "1.8.7"
+  resolved "https://registry.yarnpkg.com/@types/angular/-/angular-1.8.7.tgz#6a391016f794e5ade3d3f06130b88b8355799bff"
+  integrity sha512-Itzddybhj/oWRJMmXgjfkFoUl0twZjhhc+AhqisYdVQtJ7M1RcZM8oFIwJsXV8AraLZyxQDfZRrRUTy2G7NU2g==
 
 "@types/aria-query@^4.2.0":
   version "4.2.2"
