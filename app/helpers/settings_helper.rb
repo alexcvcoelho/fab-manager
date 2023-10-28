@@ -199,6 +199,8 @@ module SettingsHelper
     pagseguro_token
     pagseguro_email
     pagseguro_production
+    pagseguro_url_notify
+    pagseguro_url_redirect
 
   ].freeze
 end

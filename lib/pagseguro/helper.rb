@@ -35,18 +35,26 @@ class PagSeguro::Helper
     end
 
     ## Create sender informations
-    def generate_sender(customer_id)
+    def generate_sender_v1(customer_id)
       customer = User.find(customer_id)
       {
         name: customer.profile.full_name,
         email: customer.email,
-        cpf: customer.profile.cpf,
         document: generate_document(customer)
       }        
     end
 
+    def generate_sender_v2(customer_id)
+      customer = User.find(customer_id)
+      {
+        name: customer.profile.full_name,
+        email: customer.email,
+        cpf: customer.profile.cpf
+      }        
+    end
+
     ## generate hasgmap compatipble with pagseguro request
-    def generate_items(cart_items, operator_id)
+    def generate_items_v2(cart_items, operator_id)
       operator = User.find(operator_id)
       items = Array.new
       cart =  case cart_items
@@ -74,6 +82,40 @@ class PagSeguro::Helper
             id: 1,
             description: item.name,
             amount: item.price[:amount].to_i,
+            quantity: 1
+        }
+      end
+      items
+    end
+
+    def generate_items_v1(cart_items, operator_id)
+      operator = User.find(operator_id)
+      items = Array.new
+      cart =  case cart_items
+              when ShoppingCart, Order
+                cart_items
+              else
+                cs = CartService.new(operator)
+                cs.from_hash(cart_items)
+              end
+
+      if cart.is_a? Order
+        cart.order_items.map do |item|
+          items << {
+            id: item.orderable_id,
+            description: "RESERVA FABLAB",
+            amount: item.amount.to_i / 100.00,
+            quantity: item.quantity.to_i
+          }
+        end
+        return items
+      end
+
+      cart.items.map do |item|
+        items << {
+            id: 1,
+            description: item.name,
+            amount: item.price[:amount].to_i / 100.00,
             quantity: 1
         }
       end
@@ -132,7 +174,9 @@ class PagSeguro::Helper
       body
     end
 
-    def generate_payload(amount, reference, sender, items, root_url)
+    def generate_payload(amount, reference, sender, items)
+      total_items_amount = items.map { |item| item[:amount] }.sum
+      extra = -(total_items_amount - (amount / 100.00))
       body = "
         <checkout>
           <sender>
@@ -157,9 +201,10 @@ class PagSeguro::Helper
           end    
 
       body += "</items>
-          <redirectURL>#{root_url}</redirectURL>
-          <notificationURL>#{root_url}api/pagseguro/notify</notificationURL>
+          <redirectURL>#{Setting.get('pagseguro_url_redirect')}</redirectURL>
+          <notificationURL>#{Setting.get('pagseguro_url_notify')}</notificationURL>
           <reference>#{reference}</reference>
+          <extraAmount>#{format("%.2f", extra)}</extraAmount>
           <receiver>
             <email>#{Setting.get('pagseguro_email')}</email>
           </receiver>

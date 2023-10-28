@@ -94,12 +94,14 @@ export const SelectGatewayModal: React.FC<SelectGatewayModalModalProps> = ({ isO
   /**
    * Callback triggered when the embedded form has validated all the PagSeguro keys
    */
-  const handleValidPagSeguroKeys = (token: string, email: string, isProduction: boolean): void => {
+  const handleValidPagSeguroKeys = (token: string, email: string, isProduction: boolean, urlRedirect: string, urlNotify: string): void => {
     setGatewayConfig((prev) => {
       const newMap = new Map(prev);
       newMap.set('pagseguro_token', token);
       newMap.set('pagseguro_email', email);
       newMap.set('pagseguro_production', String(isProduction));
+      newMap.set('pagseguro_url_notify', urlNotify);
+      newMap.set('pagseguro_url_redirect', urlRedirect);
       return newMap;
     });
     setPreventConfirmGateway(false);

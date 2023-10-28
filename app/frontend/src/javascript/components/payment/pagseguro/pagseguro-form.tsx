@@ -29,14 +29,16 @@ export const PagseguroForm: React.FC<PagSeguroFormProps> = ({ onError, children,
       CheckoutAPI.payment(order).then(res => {
         const payment = res.payment as CreatePaymentLinkResponse;
         if (payment.url) {
-          window.location.href = payment.url;
+          window.open(payment.url, '_blank');
+          window.location.href = '/';
         }
       }).catch(error => onError(error))
         .finally(() => setLoadingClass('hidden'));
     } else {
       PagseguroAPI.createPaymentLink(cart, customer).then(payment => {
         if (payment.url) {
-          window.location.href = payment.url;
+          window.open(payment.url, '_blank');
+          window.location.href = '/';
         }
       }).catch(error => onError(error))
         .finally(() => setLoadingClass('hidden'));

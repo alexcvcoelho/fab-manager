@@ -10,34 +10,26 @@ class Payments::PagseguroService
 
     raise Cart::ZeroPriceError if amount.zero?
 
-    id = PagSeguro::Helper.generate_ref(order, order.statistic_profile.user.id)
+    @id = PagSeguro::Helper.generate_ref(order, order.statistic_profile.user.id)
 
-    # payment_result = PagSeguro::Service.new.create_payment(
-    #   amount,
-    #   @id,
-    #   PagSeguro::Helper.generate_sender(order.statistic_profile.user.id),
-    #   PagSeguro::Helper.generate_items(order, order.statistic_profile.user.id)
-    # )
-    payment_result = PagSeguro::Helper.generate_request(
+    payload = PagSeguro::Helper.generate_payload(
       amount,
       @id,
-      PagSeguro::Helper.generate_sender(order.statistic_profile.user.id),
-      PagSeguro::Helper.generate_items(order, order.statistic_profile.user.id)
+      PagSeguro::Helper.generate_sender_v1(order.statistic_profile.user.id),
+      PagSeguro::Helper.generate_items_v1(order, order.statistic_profile.user.id)
     )
 
-    { order: order, payment: payment_result }
+    result = PagSeguro::Helper.make_pagseguro_request(payload)
+    data = { coupon_code: coupon_code, customer_id: order.statistic_profile.user.id, token: order.token }
+
+    @pagseguro_intent = PagseguroIntent.new(reference_code: @id, payment_code: result[:code], shopping_cart: data.to_json, status: "pending", transaction_type: "store")
+    @pagseguro_intent.save
+    
+    { order: order, payment: result}
   end
 
   def confirm_payment(order, coupon_code, payment_id)
-    client = PayZen::Order.new
-    payzen_order = client.get(payment_id, operation_type: 'DEBIT')
-
-    if payzen_order['answer']['transactions'].any? { |transaction| transaction['status'] == 'PAID' }
-      o = payment_success(order, coupon_code, 'card', payment_id, 'PayZen::Order')
-      { order: o }
-    else
-      order.update(state: 'payment_failed')
-      { order: order, payment: { error: { statusText: payzen_order['answer'] } } }
-    end
+    o = payment_success(order, coupon_code, 'card', payment_id, 'PagSeguro::Order')
+    { order: o }
   end
 end

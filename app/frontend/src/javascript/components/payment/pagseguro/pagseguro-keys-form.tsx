@@ -8,7 +8,7 @@ import PagseguroAPI from '../../../api/pagseguro';
 import Switch from 'react-switch';
 
 interface PagseguroKeysFormProps {
-  onValidKeys: (token: string, email: string, isProduction: boolean) => void,
+  onValidKeys: (token: string, email: string, isProduction: boolean, urlToRedirect: string, urlToNotify: string) => void,
   onInvalidKeys: () => void,
 }
 
@@ -23,6 +23,10 @@ const PagseguroKeysForm: React.FC<PagseguroKeysFormProps> = ({ onValidKeys, onIn
 
   // PagSeguro environment
   const [isProduction, setIsProduction] = useState<boolean>(false);
+  // Url for redirect User after checkout
+  const [urlToRedirect, setUrlToRedirect] = useState<string>('');
+  // Url endpoint to webhook
+  const [urlToNotify, setUrlToNotify] = useState<string>('');
   // PagSeguro token
   const [token, setToken] = useState<string>('');
   // Style class for add-on token
@@ -43,10 +47,12 @@ const PagseguroKeysForm: React.FC<PagseguroKeysFormProps> = ({ onValidKeys, onIn
   useEffect(() => {
     mounted.current = true;
 
-    SettingAPI.query(['pagseguro_token', 'pagseguro_email', 'pagseguro_production']).then(pagseguroKeys => {
+    SettingAPI.query(['pagseguro_token', 'pagseguro_email', 'pagseguro_production', 'pagseguro_url_notify', 'pagseguro_url_redirect']).then(pagseguroKeys => {
       setToken(pagseguroKeys.get('pagseguro_token'));
       setEmail(pagseguroKeys.get('pagseguro_email'));
       setIsProduction(pagseguroKeys.get('pagseguro_production') === 'true');
+      setUrlToNotify(pagseguroKeys.get('pagseguro_url_notify'));
+      setUrlToRedirect(pagseguroKeys.get('pagseguro_url_redirect'));
     }).catch(error => console.error(error));
 
     // when the component unmounts, mark it as unmounted
@@ -62,7 +68,7 @@ const PagseguroKeysForm: React.FC<PagseguroKeysFormProps> = ({ onValidKeys, onIn
   useEffect(() => {
     const validClassName = 'key-valid';
     if (tokenAddOnClassName === validClassName && emailAddOnClassName === validClassName) {
-      onValidKeys(token, email, isProduction);
+      onValidKeys(token, email, isProduction, urlToRedirect, urlToNotify);
     } else {
       onInvalidKeys();
     }
@@ -125,6 +131,28 @@ const PagseguroKeysForm: React.FC<PagseguroKeysFormProps> = ({ onValidKeys, onIn
             className="switch"
             onChange={(val) => setIsProduction(val)}
           />
+      </div>
+      <div className="pagseguro-secret-input">
+          <label htmlFor="pagseguro_url_to_redirect">{ t('app.admin.invoices.pagseguro_keys_form.url_redirect') } *</label>
+          <FabInput id="pagseguro_url_redirect"
+            defaultValue={urlToRedirect}
+            onChange={(val: string) => setUrlToRedirect(val)}
+            addOn={() => null}
+            addOnClassName={''}
+            debounce={50}
+            type="url"
+            required/>
+      </div>
+      <div className="pagseguro-secret-input">
+          <label htmlFor="pagseguro_url_to_notify">{ t('app.admin.invoices.pagseguro_keys_form.url_notify') } *</label>
+          <FabInput id="pagseguro_url_notify"
+            defaultValue={urlToNotify}
+            onChange={(val: string) => setUrlToNotify(val)}
+            addOn={() => null}
+            addOnClassName={''}
+            debounce={50}
+            type="url"
+            required/>
       </div>
       <div className="pagseguro-secret-input">
           <label htmlFor="pagseguro_email">{ t('app.admin.invoices.pagseguro_keys_form.email') } *</label>

@@ -3,4 +3,5 @@ class PagseguroIntent < ApplicationRecord
     validates :payment_code, presence: true
     validates :shopping_cart, presence: true
     validates :status, presence: true
+    validates :transaction_type, presence: true
 end
