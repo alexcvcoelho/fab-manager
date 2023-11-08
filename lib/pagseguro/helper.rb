@@ -336,9 +336,9 @@ class PagSeguro::Helper
 
     def generate_document(customer)
       if customer.organization?
-        return { type: "CNPJ", value: customer.profile.cpf }
+        return { type: "CNPJ", value: customer.profile.cpf.gsub(/\D/, '') }
       else
-        return { type: "CPF", value: customer.profile.cpf }
+        return { type: "CPF", value: customer.profile.cpf .gsub(/\D/, '')}
       end
     end
 
