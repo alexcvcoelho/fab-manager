@@ -20,23 +20,14 @@ class API::PagseguroController < API::PaymentsController
 
         @id = PagSeguro::Helper.generate_ref(params[:cart_items], params[:customer_id])
 
-        # payload = PagSeguro::Helper.generate_checkout_payload(
-        #     amount,
-        #     @id,
-        #     PagSeguro::Helper.generate_sender_v2(params[:customer_id]),
-        #     PagSeguro::Helper.generate_items_v2(params[:cart_items], current_user.id),
-        #     root_url
-        # )
-
-        payload = PagSeguro::Helper.generate_payload(
-            amount[:amount],
+        payload = PagSeguro::Helper.generate_checkout_payload(
+            amount,
             @id,
-            PagSeguro::Helper.generate_sender_v1(params[:customer_id]),
-            PagSeguro::Helper.generate_items_v1(params[:cart_items], current_user.id)
+            PagSeguro::Helper.generate_sender_v2(params[:customer_id]),
+            PagSeguro::Helper.generate_items_v2(params[:cart_items], current_user.id)
         )
 
-        # result = PagSeguro::Helper.create_checkout(JSON.generate(payload))
-        result = PagSeguro::Helper.make_pagseguro_request(payload)
+        result = PagSeguro::Helper.create_checkout(JSON.generate(payload))
         if result[:error].present?
             raise "Houve um erro na comunicação com o gateway, por favor tente mais tarde"
         end

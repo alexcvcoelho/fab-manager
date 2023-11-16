@@ -122,7 +122,10 @@ class PagSeguro::Helper
       items
     end
 
-    def generate_checkout_payload(amount, reference, sender, items, root_url)
+    def generate_checkout_payload(amount, reference, sender, items)
+      url_redirect = Setting.get('pagseguro_url_redirect')
+      url_notify = Setting.get('pagseguro_url_notify')
+
       body = {
         reference_id: reference,
         expiration_date: (Time.now + 3600).strftime("%Y-%m-%dT%H:%M:%S%:z"),
@@ -158,10 +161,9 @@ class PagSeguro::Helper
             type: "BOLETO"
           }
         ],
-        redirect_url: root_url,
-        return_url: root_url,
-        notification_urls: [
-          "#{root_url}api/pagseguro/notify"
+        redirect_url: url_redirect,
+        payment_notification_urls: [
+          url_notify
         ]
       }
       body[:items] = items.map { |item| {

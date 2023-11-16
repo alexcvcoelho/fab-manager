@@ -12,14 +12,15 @@ class Payments::PagseguroService
 
     @id = PagSeguro::Helper.generate_ref(order, order.statistic_profile.user.id)
 
-    payload = PagSeguro::Helper.generate_payload(
+    payload = PagSeguro::Helper.generate_checkout_payload(
       amount,
       @id,
-      PagSeguro::Helper.generate_sender_v1(order.statistic_profile.user.id),
-      PagSeguro::Helper.generate_items_v1(order, order.statistic_profile.user.id)
+      PagSeguro::Helper.generate_sender_v2(order.statistic_profile.user.id),
+      PagSeguro::Helper.generate_items_v2(order, order.statistic_profile.user.id)
     )
 
-    result = PagSeguro::Helper.make_pagseguro_request(payload)
+
+    result = PagSeguro::Helper.create_checkout(JSON.generate(payload))
     data = { coupon_code: coupon_code, customer_id: order.statistic_profile.user.id, token: order.token }
 
     @pagseguro_intent = PagseguroIntent.new(reference_code: @id, payment_code: result[:code], shopping_cart: data.to_json, status: "pending", transaction_type: "store")
