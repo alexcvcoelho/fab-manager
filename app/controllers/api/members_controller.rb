@@ -224,6 +224,9 @@ class API::MembersController < API::APIController
                                    profile_attributes: [:id, :first_name, :last_name,  :cpf, :phone, :interest, :software_mastered, :website, :job,
                                                         :facebook, :twitter, :google_plus, :viadeo, :linkedin, :instagram, :youtube, :vimeo,
                                                         :dailymotion, :github, :echosciences, :pinterest, :lastfm, :flickr,
+                                                        :social_name, :origin_state, :origin_city, :zipcode, :street, :neighborhood, :number, :complement, 
+                                                        :city, :state, :rg, :rg_date_emission, :rg_issuing_organization, :rg_issuing_state, :mother_name,
+                                                        :occupational_status, :education_level, :financial_responsible_name, :financial_responsible_cpf, 
                                                         { user_avatar_attributes: %i[id attachment destroy] }],
                                    invoicing_profile_attributes: [
                                      :id, :organization,
