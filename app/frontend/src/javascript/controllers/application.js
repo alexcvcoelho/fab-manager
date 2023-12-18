@@ -78,7 +78,7 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
           templateUrl: '/shared/signupModal.html',
           backdrop: 'static',
           keyboard: false,
-          size: 'md',
+          size: 'xl',
           resolve: {
             settingsPromise: ['Setting', function (Setting) {
               return Setting.query({ names: "['phone_required', 'recaptcha_site_key', 'confirmation_required', 'address_required']" }).$promise;
@@ -86,7 +86,7 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
             profileCustomFieldsPromise: ['ProfileCustomField', function (ProfileCustomField) { return ProfileCustomField.query({}).$promise; }],
             proofOfIdentityTypesPromise: ['SupportingDocumentType', function (SupportingDocumentType) { return SupportingDocumentType.query({}).$promise; }]
           },
-          controller: ['$scope', '$uibModalInstance', 'Group', 'CustomAsset', 'settingsPromise', 'growl', '_t', 'profileCustomFieldsPromise', 'proofOfIdentityTypesPromise', function ($scope, $uibModalInstance, Group, CustomAsset, settingsPromise, growl, _t, profileCustomFieldsPromise, proofOfIdentityTypesPromise) {
+          controller: ['$scope', '$uibModalInstance', 'Group', 'CustomAsset', 'settingsPromise', 'growl', '_t', 'profileCustomFieldsPromise', 'proofOfIdentityTypesPromise', 'BrazillianData', function ($scope, $uibModalInstance, Group, CustomAsset, settingsPromise, growl, _t, profileCustomFieldsPromise, proofOfIdentityTypesPromise, BrazillianData) {
             // default parameters for the date picker in the account creation modal
             $scope.datePicker = {
               format: Fablab.uibDateFormat,
@@ -119,6 +119,11 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
             Group.query(function (groups) {
               $scope.groups = groups;
               $scope.enabledGroups = groups.filter(g => !g.disabled);
+            });
+
+            // retrieve all brazillian states
+            BrazillianData.all_states({}, function (states) {
+              $scope.brazillianStates = states;
             });
 
             // retrieve the CGU
@@ -154,6 +159,14 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
             $scope.alerts = [];
             $scope.closeAlert = function (index) {
               $scope.alerts.splice(index, 1);
+            };
+
+            // retrieve cities by uf
+            $scope.loadCities = function () {
+              const uf = $scope.user.profile_attributes.origin_state;
+              BrazillianData.cities({ uf }, function (cities) {
+                $scope.brazillianCities = cities;
+              });
             };
 
             // callback for form validation

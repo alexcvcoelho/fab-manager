@@ -88,6 +88,10 @@ Rails.application.routes.draw do
     get 'pricing' => 'pricing#index'
     put 'pricing' => 'pricing#update'
 
+    # brazillian data
+    get '/brazillian_data/all_states' => 'brazillian_data#all_states'
+    get '/brazillian_data/cities/:uf' => 'brazillian_data#cities'
+
     resources :prices, only: %i[create index update destroy] do
       post 'compute', on: :collection
     end

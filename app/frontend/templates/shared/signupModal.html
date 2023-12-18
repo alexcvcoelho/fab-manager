@@ -53,6 +53,45 @@
           </div>
         </div>
 
+
+        <div class="form-group required-row" ng-class="{'has-error': signupForm.social_name.$dirty && signupForm.social_name.$invalid}">
+          <div class="col-sm-12">
+            <div class="input-group">
+              <span class="input-group-addon"><i class="fa fa-user"></i></span>
+              <input type="text"
+                     name="social_name"
+                     ng-model="user.profile_attributes.social_name"
+                     class="form-control"
+                     placeholder="Nome Social">
+            </div>
+            <span class="exponent help-cursor" title="{{ 'app.public.common.used_for_profile' | translate }}"></span>
+          </div>
+        </div>
+
+        <div class="form-group required-row" ng-class="{'has-error': signupForm.origin_state.$dirty && signupForm.origin_state.$invalid}">
+          <div class="col-sm-12">
+            <div>
+              <select ng-model="user.profile_attributes.origin_state" ng-change="loadCities()" class="form-control" name="origin_state" ng-options="s.id as s.name for s in brazillianStates" required>
+                <option value="" translate>Estado de nascimento</option>
+              </select>
+              <span class="exponent exponent-select help-cursor" title="Estado de origem"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
+            </div>
+            <span class="help-block" ng-show="signupForm.origin_state.$dirty && signupForm.origin_state.$error.required" translate>Estado de origiem é obrigatório</span>
+          </div>
+        </div>
+
+        <div class="form-group required-row" ng-class="{'has-error': signupForm.origin_city.$dirty && signupForm.origin_city.$invalid}">
+          <div class="col-sm-12">
+            <div>
+              <select ng-model="user.profile_attributes.origin_city" class="form-control" name="origin_state" ng-options="s.id as s.name for s in brazillianCities" required>
+                <option value="" translate>Cidade de nascimento</option>
+              </select>
+              <span class="exponent exponent-select help-cursor" title="Cidade de nascimento"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
+            </div>
+            <span class="help-block" ng-show="signupForm.origin_city.$dirty && signupForm.origin_city.$error.required" translate>Cidade de nascimento é obrigatório</span>
+          </div>
+        </div>
+
         <div class="form-group required-row" ng-class="{'has-error': signupForm.username.$dirty && signupForm.username.$invalid}">
           <div class="col-sm-12">
             <div class="input-group">
