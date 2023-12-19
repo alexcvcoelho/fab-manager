@@ -91,6 +91,7 @@ Rails.application.routes.draw do
     # brazillian data
     get '/brazillian_data/all_states' => 'brazillian_data#all_states'
     get '/brazillian_data/cities/:uf' => 'brazillian_data#cities'
+    get '/brazillian_data/zipcode/:zip' => 'brazillian_data#zipcode'
 
     resources :prices, only: %i[create index update destroy] do
       post 'compute', on: :collection

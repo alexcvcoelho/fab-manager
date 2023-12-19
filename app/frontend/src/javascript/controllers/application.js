@@ -169,6 +169,18 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
               });
             };
 
+            // retrieve cep of zipcode
+            $scope.searchZipcode = function () {
+              const zip = $scope.user.profile_attributes.zipcode.replace(/\D/g, '');
+              if (zip.length < 8) return;
+              BrazillianData.zipcode({ zip }, function (r) {
+                $scope.user.profile_attributes.street = r.logradouro ? r.logradouro : '';
+                $scope.user.profile_attributes.neighborhood = r.bairro ? r.bairro : '';
+                $scope.user.profile_attributes.city = r.localidade;
+                $scope.user.profile_attributes.state = r.uf;
+              });
+            };
+
             // callback for form validation
             $scope.ok = function () {
               // try to create the account
@@ -221,6 +233,8 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
         signupModal.rendered.then(function () {
           /* eslint-disable */
           Inputmask({'mask': '999.999.999-99', 'clearMaskOnLostFocus': true }).mask('[name="cpf"]'); 
+          /* eslint-disable */
+          Inputmask({'mask': '99999-999', 'clearMaskOnLostFocus': true }).mask('[name="zipcode"]'); 
         });
         return signupModal;
       }

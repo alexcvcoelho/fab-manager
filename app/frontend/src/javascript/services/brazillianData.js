@@ -13,6 +13,12 @@ Application.Services.factory('BrazillianData', ['$resource', function ($resource
         url: '/api/brazillian_data/cities/:uf',
         params: { uf: '@uf' },
         isArray: true
+      },
+      zipcode: {
+        method: 'GET',
+        url: '/api/brazillian_data/zipcode/:zip',
+        params: { zip: '@zip' },
+        isArray: false
       }
     }
   );
