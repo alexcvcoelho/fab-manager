@@ -97,6 +97,18 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
               }
             };
 
+            $scope.datePickerRg = {
+              format: Fablab.uibDateFormat,
+              opened: false,
+              options: {
+                startingDay: Fablab.weekStartingDay,
+                maxDate: new Date()
+              }
+            };
+
+            // disabled city origin
+            $scope.city_origin_enabled = false;
+
             // is the phone number required to sign-up?
             $scope.phoneRequired = (settingsPromise.phone_required === 'true');
 
@@ -111,6 +123,12 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
               $event.preventDefault();
               $event.stopPropagation();
               $scope.datePicker.opened = true;
+            };
+
+            $scope.openDatePickerRg = function ($event) {
+              $event.preventDefault();
+              $event.stopPropagation();
+              $scope.datePickerRg.opened = true;
             };
 
             $scope.profileCustomFields = profileCustomFieldsPromise.filter(f => f.actived);
@@ -163,11 +181,45 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
 
             // retrieve cities by uf
             $scope.loadCities = function () {
+              $scope.city_origin_enabled = false;
               const uf = $scope.user.profile_attributes.origin_state;
               BrazillianData.cities({ uf }, function (cities) {
                 $scope.brazillianCities = cities;
+                $scope.city_origin_enabled = true;
               });
             };
+
+            $scope.ocupacional_status = [
+              { id: 1, name: 'Empregado' },
+              { id: 2, name: 'Desempregado' },
+              { id: 3, name: 'Empregador' },
+              { id: 4, name: 'Autônomo/Conta Própria' },
+              { id: 5, name: 'Profissional Liberal' },
+              { id: 6, name: '1º Emprego' },
+              { id: 7, name: 'Aposentado' },
+              { id: 8, name: 'Microempreendedor Individual - MEI' },
+              { id: 9, name: 'Aprendiz com contrato' }
+            ];
+
+            $scope.educational_levels = [
+              { id: '1', name: 'Analfabeto' },
+              { id: '2', name: 'Até o 5º ano incompleto do ensino fundamental' },
+              { id: '3', name: '5º ano completo do ensino fundamental' },
+              { id: '4', name: 'Do 6º ao 9º ano do ensino fundamental' },
+              { id: '5', name: 'Ensino fundamental completo' },
+              { id: '6', name: 'Ensino médio incompleto' },
+              { id: '7', name: 'Ensino médio completo' },
+              { id: '8', name: 'Educação superior incompleto' },
+              { id: '9', name: 'Educação superior completo' },
+              { id: 'A', name: 'Pós Grad. incompleto' },
+              { id: 'B', name: 'Pós Grad. completo' },
+              { id: 'C', name: 'Mestrado incompleto' },
+              { id: 'D', name: 'Mestrado completo' },
+              { id: 'E', name: 'Doutorado incompleto' },
+              { id: 'F', name: 'Doutorado completo' },
+              { id: 'G', name: 'Pós Dout. incompleto' },
+              { id: 'H', name: 'Pós Dout. completo' }
+            ];
 
             // retrieve cep of zipcode
             $scope.searchZipcode = function () {
