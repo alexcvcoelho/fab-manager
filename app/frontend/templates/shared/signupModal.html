@@ -147,15 +147,40 @@
 
         <!-- Nome da mãe -->
         <div class="form-group names-row" ng-class="{'has-error': signupForm.mother_name.$dirty && signupForm.mother_name.$invalid}">
-          <div class="col-sm-12">
+          <div class="col-sm-8">
               <input type="text"
                     name="mother_name"
                     ng-model="user.profile_attributes.mother_name"
                     class="form-control"
                     placeholder="Nome da mãe"
                     required>
-            <span class="exponent m-l-xs help-cursor" title="Mother's Name"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
+            <span class="exponent m-l-xs help-cursor" title="Nome da mãe"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
             <span class="help-block" ng-show="signupForm.mother_name.$dirty && signupForm.mother_name.$error.required" translate>Nome da mãe é obrigatório</span>
+          </div>
+        </div>
+
+        <!-- Código para o campo "Financial Responsible CPF" -->
+        <div class="form-group names-row">
+          <div class="col-sm-4" ng-class="{'has-error': signupForm.financial_responsible_cpf.$dirty && signupForm.financial_responsible_cpf.$invalid}">
+              <input type="text"
+                    name="financial_responsible_cpf"
+                    ng-model="user.profile_attributes.financial_responsible_cpf"
+                    class="form-control"
+                    placeholder="CPF do responsável financeiro"
+                    required>
+            <span class="exponent m-l-xs help-cursor" title="CPF do responsável financeiro"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
+            <span class="help-block" ng-show="signupForm.financial_responsible_cpf.$dirty && signupForm.financial_responsible_cpf.$error.required" translate>CPF do responsável financeiro é obrigatório</span>
+          </div>
+          <div class="m-b visible-xs"></div>
+          <div class="col-sm-8" ng-class="{'has-error': signupForm.financial_responsible_name.$dirty && signupForm.financial_responsible_name.$invalid}">
+            <input type="text"
+                  name="financial_responsible_name"
+                  ng-model="user.profile_attributes.financial_responsible_name"
+                  class="form-control"
+                  placeholder="Nome do responsável financeiro"
+                  required>
+            <span class="exponent m-l-xs help-cursor" title="Financial Responsible Name"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
+            <span class="help-block" ng-show="signupForm.financial_responsible_name.$dirty && signupForm.financial_responsible_name.$error.required" translate>O responsável financeiro é obrigatório</span>
           </div>
         </div>
 
@@ -176,41 +201,6 @@
             <span class="help-block" ng-show="signupForm.occupational_status.$dirty && signupForm.occupational_status.$error.required" translate>O nível educacional é obrigatório</span>
           </div>
         </div>
-
-        <!-- Código para o campo "Financial Responsible Name" -->
-        <div class="form-group required-row" ng-class="{'has-error': signupForm.financial_responsible_name.$dirty && signupForm.financial_responsible_name.$invalid}">
-          <div class="col-sm-12">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-user"></i></span>
-              <input type="text"
-                    name="financial_responsible_name"
-                    ng-model="user.profile_attributes.financial_responsible_name"
-                    class="form-control"
-                    placeholder="Nome do responsável financeiro"
-                    required>
-            </div>
-            <span class="exponent help-cursor" title="Financial Responsible Name"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
-            <span class="help-block" ng-show="signupForm.financial_responsible_name.$dirty && signupForm.financial_responsible_name.$error.required" translate>O responsável financeiro é obrigatório</span>
-          </div>
-        </div>
-
-        <!-- Código para o campo "Financial Responsible CPF" -->
-        <div class="form-group required-row" ng-class="{'has-error': signupForm.financial_responsible_cpf.$dirty && signupForm.financial_responsible_cpf.$invalid}">
-          <div class="col-sm-12">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-id-card"></i></span>
-              <input type="text"
-                    name="financial_responsible_cpf"
-                    ng-model="user.profile_attributes.financial_responsible_cpf"
-                    class="form-control"
-                    placeholder="CPF do responsável financeiro"
-                    required>
-            </div>
-            <span class="exponent help-cursor" title="CPF do responsável financeiro"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
-            <span class="help-block" ng-show="signupForm.financial_responsible_cpf.$dirty && signupForm.financial_responsible_cpf.$error.required" translate>CPF do responsável financeiro é obrigatório</span>
-          </div>
-        </div>
-
 
         <div class="form-group required-row" ng-class="{'has-error': signupForm.username.$dirty && signupForm.username.$invalid}">
           <div class="col-sm-12">
@@ -398,53 +388,39 @@
           </div>
         </div>
 
-        <div class="form-group required-row" ng-class="{'has-error': signupForm.zipcode.$dirty && signupForm.zipcode.$invalid}">
-          <div class="col-sm-12">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-user"></i></span>
-              <input type="text"
-                     name="zipcode"
-                     ng-model="user.profile_attributes.zipcode"
-                     class="form-control"
-                     placeholder="CEP"
-                     ng-change="searchZipcode()"
-                     required>
-            </div>
-            <span class="exponent help-cursor" title="CEP"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
+        <!-- CEP / Logradouro / Bairro -->
+        <div class="form-group names-row">
+          <div class="col-sm-2" ng-class="{'has-error': signupForm.zipcode.$dirty && signupForm.zipcode.$invalid}">
+            <input type="text"
+                    name="zipcode"
+                    ng-model="user.profile_attributes.zipcode"
+                    class="form-control"
+                    placeholder="CEP"
+                    ng-change="searchZipcode()"
+                    required>
+            <span class="exponent m-l-xs help-cursor" title="CEP"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
             <span class="help-block" ng-show="signupForm.zipcode.$dirty && signupForm.zipcode.$error.required" translate>O CEP é obrigatório</span>
           </div>
-        </div>
-
-        <!-- Código para o campo "Street" -->
-        <div class="form-group required-row" ng-class="{'has-error': signupForm.street.$dirty && signupForm.street.$invalid}">
-          <div class="col-sm-12">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-road"></i></span>
-              <input type="text"
-                    name="street"
-                    ng-model="user.profile_attributes.street"
-                    class="form-control"
-                    placeholder="Logradouro"
-                    required>
-            </div>
-            <span class="exponent help-cursor" title="Street"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
+          <div class="m-b visible-xs"></div>
+          <div class="col-sm-6" ng-class="{'has-error': signupForm.street.$dirty && signupForm.street.$invalid}">
+            <input type="text"
+                  name="street"
+                  ng-model="user.profile_attributes.street"
+                  class="form-control"
+                  placeholder="Logradouro"
+                  required>
+            <span class="exponent m-l-xs help-cursor" title="Logradouro"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
             <span class="help-block" ng-show="signupForm.street.$dirty && signupForm.street.$error.required" translate>Logradouro é obrigatório</span>
           </div>
-        </div>
-
-        <!-- Código para o campo "Neighborhood" -->
-        <div class="form-group required-row" ng-class="{'has-error': signupForm.neighborhood.$dirty && signupForm.neighborhood.$invalid}">
-          <div class="col-sm-12">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-building"></i></span>
-              <input type="text"
-                    name="neighborhood"
-                    ng-model="user.profile_attributes.neighborhood"
-                    class="form-control"
-                    placeholder="Bairro"
-                    required>
-            </div>
-            <span class="exponent help-cursor" title="Neighborhood"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
+          <div class="m-b visible-xs"></div>
+          <div class="col-sm-4" ng-class="{'has-error': signupForm.neighborhood.$dirty && signupForm.neighborhood.$invalid}">
+            <input type="text"
+                  name="neighborhood"
+                  ng-model="user.profile_attributes.neighborhood"
+                  class="form-control"
+                  placeholder="Bairro"
+                  required>
+            <span class="exponent m-l-xs help-cursor" title="Neighborhood"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
             <span class="help-block" ng-show="signupForm.neighborhood.$dirty && signupForm.neighborhood.$error.required" translate>O bairro é obrigatório</span>
           </div>
         </div>
