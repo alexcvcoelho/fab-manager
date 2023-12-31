@@ -96,7 +96,7 @@ pt:
         used_for_reservation: "Estes dados serão utilizados em caso de alteração em uma das suas reservas"
         used_for_profile: "Estes dados serão exibidos apenas no seu perfil"
         group: "Grupo"
-        trainings: "Treinamentos"
+        trainings: "Habilitações"
         tags: "Tags"
         note: "Private note"
         note_help: "This note is only visible to administrators and managers. The member cannot see it."
@@ -192,7 +192,7 @@ pt:
         warning_incomplete_user_profile_probably_imported_from_sso: "Atenção: Esse perfil de usuário está incompleto. As \"single sign-on\" (SSO) authentication is currently enabled, it may probably be an imported but non merged account. Do not modify it unless you know what your doing."
         group: "Grupo"
         group_is_required: "Grupo é obrigatório."
-        trainings: "Treinamentos"
+        trainings: "Habilitações"
         tags: "Tags"
       #machine/training slot modification modal
       confirm_modify_slot_modal:
@@ -215,8 +215,8 @@ pt:
         interests: "Interesses"
         CAD_softwares_mastered: "Softwares de CAD dominados"
         email_address: "Endereço de e-mail"
-        trainings: "Treinamentos"
-        no_trainings: "Sem treinamentos"
+        trainings: "Habilitações"
+        no_trainings: "Sem habilitações"
       #wallet
       wallet:
         wallet: 'Carteira'
@@ -532,10 +532,10 @@ pt:
         calendar: "Calendário"
         show_unavailables: "Mostrar horários completos"
         filter_calendar: "Filtrar calendário"
-        trainings: "Treinamentos"
+        trainings: "Habilitações"
         machines: "Máquinas"
         spaces: "Espaços"
-        events: "Eventos"
+        events: "Open Days"
         externals: "Outros calendários"
         show_reserved_uniq: "Mostrar apenas horários com reservas"
       machine:

@@ -77,8 +77,8 @@ pt:
           used_for_profile: "Estes dados serão exibidos apenas no seu perfil"
           used_for_pricing_stats: "Estes dados serão usados para determinar os preços a que você tem direito, e para fins estatísticos"
           public_profile: "Você terá um perfil público e outros usuários poderão associá-lo em seus projetos"
-          trainings: "Treinamentos"
-          no_trainings: "Sem treinamentos"
+          trainings: "Habilitações"
+          no_trainings: "Sem habilitações"
           subscription: "Assinatura"
           group: "Grupo"
           or: "ou"
@@ -104,21 +104,21 @@ pt:
           collaborators: "Colaboradores"
         #dashboard: my trainings
         trainings:
-          your_next_trainings: "Seus próximos treinamentos"
-          your_previous_trainings: "Seus treinamentos anteriores"
-          your_approved_trainings: "Seus treinamentos aprovados"
-          no_trainings: "Sem treinamentos"
+          your_next_trainings: "Seus próximos habilitações"
+          your_previous_trainings: "Suas habilitações anteriores"
+          your_approved_trainings: "Suas habilitações aprovados"
+          no_trainings: "Sem habilitações"
           your_training_credits: "Seus créditos para treinamento"
-          subscribe_for_credits: "Inscreva-se para se beneficiar dos treinamentos gratuitos"
-          register_for_free: "Registre-se gratuitamente para os seguintes treinamentos:"
+          subscribe_for_credits: "Inscreva-se para se beneficiar dos habilitações gratuitos"
+          register_for_free: "Registre-se gratuitamente para os seguintes habilitações:"
           book_here: "Reserve aqui"
           canceled: "Cancelado"
         #dashboard: my events
         events:
-          your_next_events: "Seus próximos eventos"
-          no_events_to_come: "Sem eventos futuros"
-          your_previous_events: "Seus eventos anteriores"
-          no_passed_events: "Sem eventos"
+          your_next_events: "Seus próximos open days"
+          no_events_to_come: "Sem open days futuros"
+          your_previous_events: "Seus open days anteriores"
+          no_passed_events: "Sem open days"
           NUMBER_normal_places_reserved: "{NUMBER} {NUMBER, plural, =0{} =1{lugar normal reservado} other{lugares normais reservados}}"
           NUMBER_of_NAME_places_reserved: "{NUMBER} {NUMBER, plural, =0{} =1{{NAME} lugar reservado} other{{NAME} lugares reservados}}"
         #dashboard: my invoices
@@ -240,7 +240,7 @@ pt:
       trainings_reserve:
         trainings_planning: "Planos de treinamento"
         planning_of: "Planejamento de " #eg. Planning of 3d printer training
-        all_trainings: "Todos treinamentos"
+        all_trainings: "Todos habilitações"
         cancel_my_selection: "Cancelar minha seleção"
         i_change: "Eu altero"
         i_shift: "Eu troco"
@@ -280,7 +280,7 @@ pt:
         shop: "Em relação às notificações da loja"
         projects: "Em relação às notificações de projetos"
         accountings: "Em relação às notificações contábeis"
-        trainings: "Em relação às notificações de treinamentos"
+        trainings: "Em relação às notificações de habilitações"
         app_management: "Em relação às notificações do gerenciamento da aplicação"
       notification_form:
         notify_admin_when_user_is_created: "Uma conta de usuário foi criada"

@@ -162,6 +162,28 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
               }
             };
 
+            $scope.showFinacialResponsible = false;
+
+            $scope.verifyAge = function () {
+              console.log($scope.user.statistic_profile_attributes.birthday);
+              if ($scope.isUnder18($scope.user.statistic_profile_attributes.birthday)) {
+                $scope.showFinacialResponsible = true;
+              } else {
+                $scope.showFinacialResponsible = false;
+              }
+            };
+
+            $scope.resetZipcodeReadonly = function () {
+              $scope.zipcodeReadonly = {
+                state: true,
+                city: true,
+                neighborhood: true,
+                street: true
+              };
+            };
+
+            $scope.resetZipcodeReadonly();
+
             $scope.hasProofOfIdentityTypes = function (groupId) {
               return proofOfIdentityTypesPromise.filter(t => t.group_ids.includes(groupId)).length > 0;
             };
@@ -171,6 +193,24 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
                 return '';
               }
               return $scope.enabledGroups.find(g => g.id === groupId).name;
+            };
+
+            $scope.isUnder18 = function (dateString) {
+              const currentDate = new Date();
+              const birthDate = new Date(dateString);
+              const ageDifference = currentDate.getFullYear() - birthDate.getFullYear();
+              if (ageDifference < 18) {
+                return true;
+              }
+              if (
+                ageDifference === 18 &&
+                (birthDate.getMonth() > currentDate.getMonth() ||
+                  (birthDate.getMonth() === currentDate.getMonth() &&
+                    birthDate.getDate() > currentDate.getDate()))
+              ) {
+                return true;
+              }
+              return false;
             };
 
             // Errors display
@@ -188,6 +228,8 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
                 $scope.city_origin_enabled = true;
               });
             };
+
+            $scope.group_id = 6;
 
             $scope.ocupacional_status = [
               { id: 1, name: 'Empregado' },
@@ -225,11 +267,24 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
             $scope.searchZipcode = function () {
               const zip = $scope.user.profile_attributes.zipcode.replace(/\D/g, '');
               if (zip.length < 8) return;
+              $scope.resetZipcodeReadonly();
               BrazillianData.zipcode({ zip }, function (r) {
-                $scope.user.profile_attributes.street = r.logradouro ? r.logradouro : '';
-                $scope.user.profile_attributes.neighborhood = r.bairro ? r.bairro : '';
-                $scope.user.profile_attributes.city = r.localidade;
-                $scope.user.profile_attributes.state = r.uf;
+                if (r.logradouro && r.logradouro !== '') {
+                  $scope.zipcodeReadonly.street = true;
+                  $scope.user.profile_attributes.street = r.logradouro;
+                } else $scope.zipcodeReadonly.street = false;
+                if (r.bairro && r.bairro !== '') {
+                  $scope.zipcodeReadonly.neighborhood = true;
+                  $scope.user.profile_attributes.neighborhood = r.bairro;
+                } else $scope.zipcodeReadonly.neighborhood = false;
+                if (r.localidade && r.localidade !== '') {
+                  $scope.zipcodeReadonly.city = true;
+                  $scope.user.profile_attributes.city = r.localidade;
+                } else $scope.zipcodeReadonly.city = false;
+                if (r.uf && r.uf !== '') {
+                  $scope.zipcodeReadonly.state = true;
+                  $scope.user.profile_attributes.state = r.uf;
+                } else $scope.zipcodeReadonly.state = false;
               });
             };
 
