@@ -165,9 +165,10 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
             $scope.showFinacialResponsible = false;
 
             $scope.verifyAge = function () {
-              console.log($scope.user.statistic_profile_attributes.birthday);
               if ($scope.isUnder18($scope.user.statistic_profile_attributes.birthday)) {
                 $scope.showFinacialResponsible = true;
+                /* eslint-disable */
+                Inputmask({'mask': '999.999.999-99', 'clearMaskOnLostFocus': true }).mask('[name="financial_responsible_cpf"]');
               } else {
                 $scope.showFinacialResponsible = false;
               }
@@ -339,7 +340,7 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
         });
         signupModal.rendered.then(function () {
           /* eslint-disable */
-          Inputmask({'mask': '999.999.999-99', 'clearMaskOnLostFocus': true }).mask('[name="cpf"]'); 
+          Inputmask({'mask': '999.999.999-99', 'clearMaskOnLostFocus': true }).mask('[name="cpf"]');
           /* eslint-disable */
           Inputmask({'mask': '99999-999', 'clearMaskOnLostFocus': true }).mask('[name="zipcode"]'); 
         });
