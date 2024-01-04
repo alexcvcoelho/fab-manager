@@ -107,9 +107,11 @@
                     ng-model="user.profile_attributes.cpf"
                     class="form-control"
                     placeholder="{{ 'app.public.common.your_cpf' | translate }}"
+                    cpf
                     required>            
             <span class="exponent m-l-xs help-cursor" title="{{ 'app.public.common.used_for_profile' | translate }}"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
             <span class="help-block" ng-show="signupForm.cpf.$dirty && signupForm.cpf.$error.required" translate>{{ 'app.public.common.cpf_is_required' }}</span>
+            <span class="help-block" ng-show="signupForm.cpf.$dirty && signupForm.cpf.$error.cpf">O CPF é inválido</span>
           </div>
           <div class="m-b visible-xs"></div>
           <div class="col-sm-6" ng-class="{'has-error': signupForm.rg.$dirty && signupForm.rg.$invalid}">
@@ -183,9 +185,11 @@
                     ng-model="user.profile_attributes.financial_responsible_cpf"
                     class="form-control"
                     placeholder="CPF do responsável financeiro"
+                    cpf
                     required>
             <span class="exponent m-l-xs help-cursor" title="CPF do responsável financeiro"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
             <span class="help-block" ng-show="signupForm.financial_responsible_cpf.$dirty && signupForm.financial_responsible_cpf.$error.required" translate>CPF do responsável financeiro é obrigatório</span>
+            <span class="help-block" ng-show="signupForm.financial_responsible_cpf.$dirty && signupForm.financial_responsible_cpf.$error.cpf" translate>CPF inválido</span>
           </div>
           <div class="m-b visible-xs"></div>
           <div class="col-sm-8" ng-class="{'has-error': signupForm.financial_responsible_name.$dirty && signupForm.financial_responsible_name.$invalid}">

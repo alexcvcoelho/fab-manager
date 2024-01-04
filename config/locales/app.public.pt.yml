@@ -17,7 +17,7 @@ pt:
         my_settings: "Minhas Configurações"
         my_supporting_documents_files: "Meus documentos"
         my_projects: "Meus Projetos"
-        my_trainings: "Meus Habilitações"
+        my_trainings: "Minhas Habilitações"
         my_reservations: "Minhas Reservas"
         my_events: "Meus Open Days"
         my_invoices: "Minhas Contas"
@@ -37,7 +37,7 @@ pt:
         reduce_panel: "Reduzir painel"
         #left menu (public)
         home: "Início"
-        reserve_a_machine: "Máquinas"
+        reserve_a_machine: "Aluguel de Máquinas"
         trainings_registrations: "Habilitações"
         events_registrations: "Open Days"
         reserve_a_space: "Reservar Espaço"
@@ -364,7 +364,7 @@ pt:
         show_unavailables: "Mostrar slots não disponíveis"
         filter_calendar: "Filtrar calendário"
         trainings: "Habilitações"
-        machines: "Máquinas"
+        machines: "Aluguel de Máquinas"
         spaces: "Espaços"
         events: "Open Days"
         externals: "Outras agendas"
@@ -489,7 +489,7 @@ pt:
             title: "Página inicial"
             content: "Clicar aqui te levará de volta à página inicial onde você está atualmente."
           machines:
-            title: "Máquinas"
+            title: "Aluguel de Máquinas"
             content: "<p>Esta página permitirá que você consulte a lista de todas as máquinas e reserve um slot em nome de um membro.</p><p>Uma máquina pode ser, por exemplo, uma impressora 3D.</p><p>Membros também podem acessar esta página e reservar uma máquina eles mesmos, se o pagamento com cartão de crédito estiver ativado, ou se alguns preços são iguais a 0.</p>"
           trainings:
             title: "Habilitações"
