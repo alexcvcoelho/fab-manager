@@ -14,6 +14,12 @@ class Profile < ApplicationRecord
 
   after_commit :update_invoicing_profile, if: :invoicing_data_was_modified?
 
+  before_save do
+    self.cpf.gsub(/\D/, '') if self.cpf.present?
+    self.financial_responsible_cpf.gsub(/\D/, '') if self.financial_responsible_cpf.present?
+    self.zipcode.gsub(/\D/, '') if self.zipcode.present?
+  end
+
   def full_name
     # if first_name or last_name is nil, the empty string will be used as a temporary replacement
     "#{(first_name || '').humanize.titleize} #{(last_name || '').humanize.titleize}"

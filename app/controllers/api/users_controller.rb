@@ -53,7 +53,7 @@ class API::UsersController < API::APIController
     params.require(:manager).permit(
       :username, :email, :group_id,
       tag_ids: [],
-      profile_attributes: %i[first_name last_name phone cpf],
+      profile_attributes: %i[first_name last_name phone cpf social_name origin_state origin_city zipcode street neighborhood number complement city state rg rg_date_emission rg_issuing_organization rg_issuing_state mother_name occupational_status education_level financial_responsible_name financial_responsible_cpf],
       invoicing_profile_attributes: [address_attributes: [:address]],
       statistic_profile_attributes: %i[gender birthday]
     )
