@@ -27,6 +27,8 @@ export interface User {
     id: number,
     first_name: string,
     last_name: string,
+    cpf: string,
+    origin_state: string,
     interest?: string,
     software_mastered?: string,
     phone?: string,

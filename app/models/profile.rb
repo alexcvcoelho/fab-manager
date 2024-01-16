@@ -13,12 +13,7 @@ class Profile < ApplicationRecord
   validates :phone, numericality: { only_integer: true, allow_blank: false, if: -> { Setting.get('phone_required') } }
 
   after_commit :update_invoicing_profile, if: :invoicing_data_was_modified?
-
-  before_save do
-    self.cpf.gsub(/\D/, '') if self.cpf.present?
-    self.financial_responsible_cpf.gsub(/\D/, '') if self.financial_responsible_cpf.present?
-    self.zipcode.gsub(/\D/, '') if self.zipcode.present?
-  end
+  before_save :sanitize_attributes
 
   def full_name
     # if first_name or last_name is nil, the empty string will be used as a temporary replacement
@@ -42,6 +37,12 @@ class Profile < ApplicationRecord
   end
 
   private
+
+  def sanitize_attributes
+    self.cpf.gsub(/\D/, '') if self.cpf.present?
+    self.financial_responsible_cpf.gsub(/\D/, '') if self.financial_responsible_cpf.present?
+    self.zipcode.gsub(/\D/, '') if self.zipcode.present?
+  end
 
   def invoicing_data_was_modified?
     saved_change_to_first_name? || saved_change_to_last_name? || new_record?

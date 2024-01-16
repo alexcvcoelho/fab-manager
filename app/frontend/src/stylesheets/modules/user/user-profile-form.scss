@@ -9,9 +9,13 @@
       margin-top: 1.5rem;
     }
 
-    .names, .birth-phone, .website-job, .interests-CAD {
+    .names, .birth-phone, .website-job, .interests-CAD, .social-name-gender {
       display: flex;
       flex-direction: row;
+
+      .social-name {
+        width: 50%;
+      }
 
       .form-item:first-child {
         margin-right: 32px;
@@ -50,7 +54,7 @@
   &--small {
     flex-direction: column;
 
-    .names, .birth-phone, .website-job, .interests-CAD {
+    .names, .birth-phone, .website-job, .interests-CAD, .social-name-gender {
       flex-direction: column;
 
       .form-item:first-child {
