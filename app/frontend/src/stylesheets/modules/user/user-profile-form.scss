@@ -22,6 +22,14 @@
       }
     }
 
+    .birth-state-city-origin, .rg-data {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
     .organization-toggle {
       p {
         font-family: var(--font-text);

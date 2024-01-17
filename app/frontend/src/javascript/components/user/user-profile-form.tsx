@@ -113,8 +113,8 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
   /**
    * Load cities on change state
    */
-  const loadCities = (event: React.FormEvent<HTMLInputElement>) => {
-    BrazillianAPI.cities(event.currentTarget.value).then(data => {
+  const loadCities = (uf: string) => {
+    BrazillianAPI.cities(uf).then(data => {
       const items = data.map(t => {
         return { value: t.nome, label: t.nome };
       });
@@ -232,19 +232,67 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                        label={t('app.shared.user_profile_form.social_name')} />
             <GenderInput register={register} disabled={isDisabled} required />
           </div>
+          <div className="birth-state-city-origin">
+            <FormInput id="statistic_profile_attributes.birthday"
+                       register={register}
+                       label={t('app.shared.user_profile_form.date_of_birth')}
+                       disabled={isDisabled}
+                       rules={{ required: true }}
+                       formState={formState}
+                       type="date"
+                       nullable />
+            <FormSelect id="profile_attributes.origin_state"
+                        control={control}
+                        label={t('app.shared.user_profile_form.origin_state')}
+                        onChange={loadCities}
+                        options={states}
+                        disabled={isDisabled}
+                        rules={{ required: true }}
+                        formState={formState} />
+            <FormSelect id="profile_attributes.origin_city"
+                        control={control}
+                        label={t('app.shared.user_profile_form.origin_city')}
+                        options={cities}
+                        disabled={isDisabled}
+                        rules={{ required: true }}
+                        formState={formState} />
+          </div>
           <div className="names">
             <FormInput id="profile_attributes.cpf"
-                       register={register}
-                       rules={{ required: true }}
-                       disabled={isDisabled}
-                       formState={formState}
-                       label={t('app.shared.user_profile_form.cpf')} />
+                      register={register}
+                      rules={{ required: true }}
+                      disabled={isDisabled}
+                      formState={formState}
+                      label={t('app.shared.user_profile_form.cpf')} />
             <FormInput id="profile_attributes.rg"
+                      register={register}
+                      rules={{ required: true }}
+                      disabled={isDisabled}
+                      formState={formState}
+                      label={t('app.shared.user_profile_form.rg')} />
+          </div>
+          <div className="rg-data">
+            <FormInput id="profile_attributes.rg_date_emission"
+                       register={register}
+                       label={t('app.shared.user_profile_form.rg_date_emission')}
+                       disabled={isDisabled}
+                       rules={{ required: true }}
+                       formState={formState}
+                       type="date"
+                       nullable />
+            <FormInput id="profile_attributes.rg_issuing_organization"
                        register={register}
                        rules={{ required: true }}
                        disabled={isDisabled}
                        formState={formState}
-                       label={t('app.shared.user_profile_form.rg')} />
+                       label={t('app.shared.user_profile_form.rg_issuing_organization')} />
+            <FormSelect id="profile_attributes.rg_issuing_organization"
+                        control={control}
+                        label={t('app.shared.user_profile_form.origin_state')}
+                        options={states}
+                        disabled={isDisabled}
+                        rules={{ required: true }}
+                        formState={formState} />
           </div>
           <div className="birth-phone">
             <FormInput id="profile_attributes.phone"
@@ -259,31 +307,6 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                        disabled={isDisabled}
                        formState={formState}
                        label={t('app.shared.user_profile_form.phone_number')} />
-          </div>
-          <div className="birth-state-city-origin">
-            <FormInput id="statistic_profile_attributes.birthday"
-                       register={register}
-                       label={t('app.shared.user_profile_form.date_of_birth')}
-                       disabled={isDisabled}
-                       rules={{ required: true }}
-                       formState={formState}
-                       type="date"
-                       nullable />
-            <FormSelect id="statistic_profile_attributes.origin_state"
-                        control={control}
-                        label={t('app.shared.user_profile_form.origin_state')}
-                        onChange={loadCities}
-                        options={states}
-                        disabled={isDisabled}
-                        rules={{ required: true }}
-                        formState={formState} />
-            <FormSelect id="statistic_profile_attributes.origin_city"
-                        control={control}
-                        label={t('app.shared.user_profile_form.origin_city')}
-                        options={cities}
-                        disabled={isDisabled}
-                        rules={{ required: true }}
-                        formState={formState} />
           </div>
           <div className="address">
             <FormInput id="invoicing_profile_attributes.address_attributes.id"
