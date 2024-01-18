@@ -682,7 +682,7 @@ Application.Controllers.controller('ShowEventController', ['$scope', '$state', '
       if ($scope.event) {
         $scope.reserve = {
           nbPlaces: {
-            normal: __range__(0, $scope.event.nb_free_places, true)
+            normal: __range__(0, $scope.event.nb_free_places > 1 ? 1 : $scope.event.nb_free_places, true)
           },
           nbReservePlaces: 0,
           tickets: {},
