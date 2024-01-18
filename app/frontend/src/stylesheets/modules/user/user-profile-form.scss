@@ -9,9 +9,24 @@
       margin-top: 1.5rem;
     }
 
-    .names, .birth-phone, .website-job, .interests-CAD, .social-name-gender {
+    .names, 
+    .website-job, 
+    .interests-CAD, 
+    .social-name-gender, 
+    .mothers-name, 
+    .responsible-data, 
+    .occupacional-education-level, 
+    .birth-state-city-origin, 
+    .rg-data, 
+    .zipcode-street-neighborhood, 
+    .number-complement,
+    .rg-cpf,
+    .number-complement {
       display: flex;
       flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
 
       .social-name {
         width: 50%;
@@ -20,14 +35,6 @@
       .form-item:first-child {
         margin-right: 32px;
       }
-    }
-
-    .birth-state-city-origin, .rg-data {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
     }
 
     .organization-toggle {
@@ -62,7 +69,19 @@
   &--small {
     flex-direction: column;
 
-    .names, .birth-phone, .website-job, .interests-CAD, .social-name-gender {
+    .names, 
+    .website-job, 
+    .interests-CAD, 
+    .social-name-gender, 
+    .mothers-name, 
+    .responsible-data, 
+    .occupacional-education-level, 
+    .birth-state-city-origin, 
+    .rg-data, 
+    .zipcode-street-neighborhood, 
+    .number-complement,
+    .rg-cpf,
+    .number-complement {
       flex-direction: column;
 
       .form-item:first-child {

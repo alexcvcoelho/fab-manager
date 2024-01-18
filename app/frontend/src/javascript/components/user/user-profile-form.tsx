@@ -71,6 +71,38 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
   const [fieldsSettings, setFieldsSettings] = useState<Map<SettingName, string>>(new Map());
   const [isSuccessfullySubmitted, setIsSuccessfullySubmitted] = React.useState<boolean>(false);
 
+  const ocupacionalStatus = [
+    { value: 1, label: 'Empregado' },
+    { value: 2, label: 'Desempregado' },
+    { value: 3, label: 'Empregador' },
+    { value: 4, label: 'Autônomo/Conta Própria' },
+    { value: 5, label: 'Profissional Liberal' },
+    { value: 6, label: '1º Emprego' },
+    { value: 7, label: 'Aposentado' },
+    { value: 8, label: 'Microempreendedor Individual - MEI' },
+    { value: 9, label: 'Aprendiz com contrato' }
+  ];
+
+  const educationalLevels = [
+    { value: '1', label: 'Analfabeto' },
+    { value: '2', label: 'Até o 5º ano incompleto do ensino fundamental' },
+    { value: '3', label: '5º ano completo do ensino fundamental' },
+    { value: '4', label: 'Do 6º ao 9º ano do ensino fundamental' },
+    { value: '5', label: 'Ensino fundamental completo' },
+    { value: '6', label: 'Ensino médio incompleto' },
+    { value: '7', label: 'Ensino médio completo' },
+    { value: '8', label: 'Educação superior incompleto' },
+    { value: '9', label: 'Educação superior completo' },
+    { value: 'A', label: 'Pós Grad. incompleto' },
+    { value: 'B', label: 'Pós Grad. completo' },
+    { value: 'C', label: 'Mestrado incompleto' },
+    { value: 'D', label: 'Mestrado completo' },
+    { value: 'E', label: 'Doutorado incompleto' },
+    { value: 'F', label: 'Doutorado completo' },
+    { value: 'G', label: 'Pós Dout. incompleto' },
+    { value: 'H', label: 'Pós Dout. completo' }
+  ];
+
   useEffect(() => {
     AuthProviderAPI.active().then(data => {
       setIsLocalDatabaseProvider(data.providable_type === 'DatabaseProvider');
@@ -257,7 +289,7 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                         rules={{ required: true }}
                         formState={formState} />
           </div>
-          <div className="names">
+          <div className="rg-cpf">
             <FormInput id="profile_attributes.cpf"
                       register={register}
                       rules={{ required: true }}
@@ -294,7 +326,93 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                         rules={{ required: true }}
                         formState={formState} />
           </div>
-          <div className="birth-phone">
+          <div className="mothers-name">
+            <FormInput id="profile_attributes.mother_name"
+                       register={register}
+                       rules={{ required: true }}
+                       disabled={isDisabled}
+                       formState={formState}
+                       label={t('app.shared.user_profile_form.mother_name')} />
+          </div>
+          <div className="responsible-data">
+            <FormInput id="profile_attributes.financial_responsible_cpf"
+                       className="cpf-responsible"
+                       register={register}
+                       rules={{ required: true }}
+                       disabled={isDisabled}
+                       formState={formState}
+                       label={t('app.shared.user_profile_form.financial_responsible_cpf')} />
+            <FormInput id="profile_attributes.financial_responsible_name"
+                       register={register}
+                       rules={{ required: true }}
+                       disabled={isDisabled}
+                       formState={formState}
+                       label={t('app.shared.user_profile_form.financial_responsible_name')} />
+          </div>
+          <div className="occupacional-education-level">
+            <FormSelect id="profile_attributes.occupational_status"
+                        control={control}
+                        label={t('app.shared.user_profile_form.occupational_status')}
+                        options={ocupacionalStatus}
+                        disabled={isDisabled}
+                        rules={{ required: true }}
+                        formState={formState} />
+            <FormSelect id="profile_attributes.education_level"
+                        control={control}
+                        label={t('app.shared.user_profile_form.education_level')}
+                        options={educationalLevels}
+                        disabled={isDisabled}
+                        rules={{ required: true }}
+                        formState={formState} />
+          </div>
+          <div className="zipcode-street-neighborhood">
+            <FormInput id="profile_attributes.zipcode"
+                       register={register}
+                       rules={{ required: true }}
+                       disabled={isDisabled}
+                       formState={formState}
+                       label={t('app.shared.user_profile_form.zipcode')} />
+            <FormInput id="profile_attributes.street"
+                       register={register}
+                       rules={{ required: true }}
+                       disabled={isDisabled}
+                       formState={formState}
+                       label={t('app.shared.user_profile_form.street')} />
+            <FormInput id="profile_attributes.neighborhood"
+                       register={register}
+                       rules={{ required: true }}
+                       disabled={isDisabled}
+                       formState={formState}
+                       label={t('app.shared.user_profile_form.neighborhood')} />
+          </div>
+          <div className="number-complement">
+            <FormInput id="profile_attributes.number"
+                       register={register}
+                       rules={{ required: true }}
+                       disabled={isDisabled}
+                       formState={formState}
+                       type="number"
+                       label={t('app.shared.user_profile_form.number')} />
+            <FormInput id="profile_attributes.complement"
+                       register={register}
+                       rules={{ required: false }}
+                       disabled={isDisabled}
+                       formState={formState}
+                       label={t('app.shared.user_profile_form.complement')} />
+            <FormInput id="profile_attributes.city"
+                       register={register}
+                       rules={{ required: true }}
+                       disabled={isDisabled}
+                       formState={formState}
+                       label={t('app.shared.user_profile_form.city')} />
+            <FormInput id="profile_attributes.state"
+                       register={register}
+                       rules={{ required: true }}
+                       disabled={isDisabled}
+                       formState={formState}
+                       label={t('app.shared.user_profile_form.state')} />
+          </div>
+          <div className="phone">
             <FormInput id="profile_attributes.phone"
                        register={register}
                        rules={{
@@ -307,17 +425,6 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                        disabled={isDisabled}
                        formState={formState}
                        label={t('app.shared.user_profile_form.phone_number')} />
-          </div>
-          <div className="address">
-            <FormInput id="invoicing_profile_attributes.address_attributes.id"
-                       register={register}
-                       type="hidden" />
-            <FormInput id="invoicing_profile_attributes.address_attributes.address"
-                       register={register}
-                       disabled={isDisabled}
-                       rules={{ required: fieldsSettings.get('address_required') === 'true' }}
-                       formState={formState}
-                       label={t('app.shared.user_profile_form.address')} />
           </div>
         </div>
         <div className="account-data">
