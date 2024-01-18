@@ -111,7 +111,9 @@ class User < ApplicationRecord
 
   def need_completion?
     statistic_profile.gender.nil? || profile.first_name.blank? || profile.last_name.blank? || username.blank? ||
-      email.blank? || encrypted_password.blank? || group_id.nil? || statistic_profile.birthday.blank? ||
+      email.blank? || encrypted_password.blank? || group_id.nil? || statistic_profile.birthday.blank? || profile.rg.nil?
+      profile.origin_state.nil? || profile.origin_city.nil? || profile.zipcode.nil? || profile.street.nil? || 
+      profile.number.nil? || profile.city.nil? || profile.state.nil? || 
       (Setting.get('phone_required') && profile.phone.blank?) ||
       (Setting.get('address_required') && invoicing_profile.address&.address&.blank?)
   end

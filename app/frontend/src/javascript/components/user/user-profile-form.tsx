@@ -66,21 +66,23 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
   const [groups, setGroups] = useState<SelectOption<number>[]>([]);
   const [states, setStates] = useState<SelectOption<string>[]>([]);
   const [cities, setCities] = useState<SelectOption<string>[]>([]);
+  const [originStateDisabled, setOriginStateDisabled] = useState<boolean>(true);
+  const [showResponsibleData, setShowResponsibleData] = useState<boolean>(false);
   const [termsAndConditions, setTermsAndConditions] = useState<CustomAsset>(null);
   const [profileCustomFields, setProfileCustomFields] = useState<ProfileCustomField[]>([]);
   const [fieldsSettings, setFieldsSettings] = useState<Map<SettingName, string>>(new Map());
   const [isSuccessfullySubmitted, setIsSuccessfullySubmitted] = React.useState<boolean>(false);
 
   const ocupacionalStatus = [
-    { value: 1, label: 'Empregado' },
-    { value: 2, label: 'Desempregado' },
-    { value: 3, label: 'Empregador' },
-    { value: 4, label: 'Autônomo/Conta Própria' },
-    { value: 5, label: 'Profissional Liberal' },
-    { value: 6, label: '1º Emprego' },
-    { value: 7, label: 'Aposentado' },
-    { value: 8, label: 'Microempreendedor Individual - MEI' },
-    { value: 9, label: 'Aprendiz com contrato' }
+    { value: '1', label: 'Empregado' },
+    { value: '2', label: 'Desempregado' },
+    { value: '3', label: 'Empregador' },
+    { value: '4', label: 'Autônomo/Conta Própria' },
+    { value: '5', label: 'Profissional Liberal' },
+    { value: '6', label: '1º Emprego' },
+    { value: '7', label: 'Aposentado' },
+    { value: '8', label: 'Microempreendedor Individual - MEI' },
+    { value: '9', label: 'Aprendiz com contrato' }
   ];
 
   const educationalLevels = [
@@ -139,18 +141,68 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
       .then(settings => setFieldsSettings(settings))
       .catch(error => onError(error));
 
+    checkIsUnder18(user.statistic_profile_attributes.birthday);
+    if (user.profile_attributes.origin_city) {
+      loadCities(user.profile_attributes.origin_state);
+    }
     Inputmask({ mask: '999.999.999-99', clearMaskOnLostFocus: true }).mask('[name="profile_attributes.cpf"]');
+    Inputmask({ mask: '999.999.999-99', clearMaskOnLostFocus: true }).mask('[name="profile_attributes.financial_responsible_cpf"]');
+    Inputmask({ mask: '99999-999', clearMaskOnLostFocus: true }).mask('[name="profile_attributes.zipcode"]');
   }, []);
+
+  /**
+   * Check if is under 18 to show a responsible data
+   */
+  const checkIsUnder18 = (date: Date | string) => {
+    setShowResponsibleData(isUnder18(date));
+  };
 
   /**
    * Load cities on change state
    */
   const loadCities = (uf: string) => {
+    setOriginStateDisabled(true);
     BrazillianAPI.cities(uf).then(data => {
       const items = data.map(t => {
         return { value: t.nome, label: t.nome };
       });
       setCities(items);
+      setOriginStateDisabled(false);
+    }).catch(error => onError(error));
+  };
+
+  /**
+   * Calculate if birth date is under 18
+   */
+  const isUnder18 = (dateString: Date | string) => {
+    const currentDate = new Date();
+    const birthDate = new Date(dateString);
+    const ageDifference = currentDate.getFullYear() - birthDate.getFullYear();
+    if (ageDifference < 18) {
+      return true;
+    }
+    if (
+      ageDifference === 18 &&
+      (birthDate.getMonth() > currentDate.getMonth() ||
+        (birthDate.getMonth() === currentDate.getMonth() &&
+          birthDate.getDate() > currentDate.getDate()))
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  /**
+   * Load CEP data on change Zipcode
+   */
+  const loadZipCode = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const zipcode = event.target.value.replace(/\D/g, '');
+    if (zipcode.length !== 8) return;
+    BrazillianAPI.zipcode(zipcode).then(data => {
+      setValue('profile_attributes.street', data.logradouro, { shouldDirty: true });
+      setValue('profile_attributes.neighborhood', data.bairro, { shouldDirty: true });
+      setValue('profile_attributes.city', data.localidade, { shouldDirty: true });
+      setValue('profile_attributes.state', data.uf, { shouldDirty: true });
     }).catch(error => onError(error));
   };
 
@@ -270,6 +322,7 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                        label={t('app.shared.user_profile_form.date_of_birth')}
                        disabled={isDisabled}
                        rules={{ required: true }}
+                       onChange={(event) => checkIsUnder18(event.target.value)}
                        formState={formState}
                        type="date"
                        nullable />
@@ -285,7 +338,7 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                         control={control}
                         label={t('app.shared.user_profile_form.origin_city')}
                         options={cities}
-                        disabled={isDisabled}
+                        disabled={isDisabled || originStateDisabled}
                         rules={{ required: true }}
                         formState={formState} />
           </div>
@@ -318,9 +371,9 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                        disabled={isDisabled}
                        formState={formState}
                        label={t('app.shared.user_profile_form.rg_issuing_organization')} />
-            <FormSelect id="profile_attributes.rg_issuing_organization"
+            <FormSelect id="profile_attributes.rg_issuing_state"
                         control={control}
-                        label={t('app.shared.user_profile_form.origin_state')}
+                        label={t('app.shared.user_profile_form.rg_issuing_state')}
                         options={states}
                         disabled={isDisabled}
                         rules={{ required: true }}
@@ -334,7 +387,7 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                        formState={formState}
                        label={t('app.shared.user_profile_form.mother_name')} />
           </div>
-          <div className="responsible-data">
+          {showResponsibleData && <div className="responsible-data">
             <FormInput id="profile_attributes.financial_responsible_cpf"
                        className="cpf-responsible"
                        register={register}
@@ -348,7 +401,7 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                        disabled={isDisabled}
                        formState={formState}
                        label={t('app.shared.user_profile_form.financial_responsible_name')} />
-          </div>
+          </div>}
           <div className="occupacional-education-level">
             <FormSelect id="profile_attributes.occupational_status"
                         control={control}
@@ -371,17 +424,18 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
                        rules={{ required: true }}
                        disabled={isDisabled}
                        formState={formState}
+                       onChange={loadZipCode}
                        label={t('app.shared.user_profile_form.zipcode')} />
             <FormInput id="profile_attributes.street"
                        register={register}
                        rules={{ required: true }}
-                       disabled={isDisabled}
+                       disabled={true}
                        formState={formState}
                        label={t('app.shared.user_profile_form.street')} />
             <FormInput id="profile_attributes.neighborhood"
                        register={register}
                        rules={{ required: true }}
-                       disabled={isDisabled}
+                       disabled={true}
                        formState={formState}
                        label={t('app.shared.user_profile_form.neighborhood')} />
           </div>
@@ -402,13 +456,13 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ action, size, 
             <FormInput id="profile_attributes.city"
                        register={register}
                        rules={{ required: true }}
-                       disabled={isDisabled}
+                       disabled={true}
                        formState={formState}
                        label={t('app.shared.user_profile_form.city')} />
             <FormInput id="profile_attributes.state"
                        register={register}
                        rules={{ required: true }}
-                       disabled={isDisabled}
+                       disabled={true}
                        formState={formState}
                        label={t('app.shared.user_profile_form.state')} />
           </div>
