@@ -93,9 +93,9 @@ class API::SettingsController < API::APIController
   end
 
   # run the given block in a transaction if `should` is true. Just run it normally otherwise
-  def may_transaction(should, &)
+  def may_transaction(should, &block)
     if should == 'true'
-      ActiveRecord::Base.transaction(&)
+      ActiveRecord::Base.transaction(&block)
     else
       yield
     end
