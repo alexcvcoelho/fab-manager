@@ -35,28 +35,19 @@ class PagSeguro::Helper
     end
 
     ## Create sender informations
-    def generate_sender_v1(customer_id)
-      customer = User.find(customer_id)
-      {
-        name: customer.profile.full_name,
-        email: customer.email,
-        document: generate_document(customer)
-      }        
-    end
-
     def generate_sender_v2(customer_id)
       customer = User.find(customer_id)
       {
         name: customer.profile.full_name,
         email: customer.email,
         cpf: customer.profile.cpf
-      }        
+      }
     end
 
     ## generate hasgmap compatipble with pagseguro request
     def generate_items_v2(cart_items, operator_id)
       operator = User.find(operator_id)
-      items = Array.new
+      items = []
       cart =  case cart_items
               when ShoppingCart, Order
                 cart_items
@@ -69,7 +60,7 @@ class PagSeguro::Helper
         cart.order_items.map do |item|
           items << {
             id: item.orderable_id,
-            description: "RESERVA FABLAB",
+            description: 'RESERVA FABLAB',
             amount: item.amount.to_i,
             quantity: item.quantity.to_i
           }
@@ -79,56 +70,22 @@ class PagSeguro::Helper
 
       cart.items.map do |item|
         items << {
-            id: 1,
-            description: item.name,
-            amount: item.price[:amount].to_i,
-            quantity: 1
+          id: 1,
+          description: item.name,
+          amount: item.price[:amount].to_i,
+          quantity: 1
         }
       end
       items
     end
 
-    def generate_items_v1(cart_items, operator_id)
-      operator = User.find(operator_id)
-      items = Array.new
-      cart =  case cart_items
-              when ShoppingCart, Order
-                cart_items
-              else
-                cs = CartService.new(operator)
-                cs.from_hash(cart_items)
-              end
-
-      if cart.is_a? Order
-        cart.order_items.map do |item|
-          items << {
-            id: item.orderable_id,
-            description: "RESERVA FABLAB",
-            amount: item.amount.to_i / 100.00,
-            quantity: item.quantity.to_i
-          }
-        end
-        return items
-      end
-
-      cart.items.map do |item|
-        items << {
-            id: 1,
-            description: item.name,
-            amount: item.price[:amount].to_i / 100.00,
-            quantity: 1
-        }
-      end
-      items
-    end
-
-    def generate_checkout_payload(amount, reference, sender, items)
+    def generate_checkout_payload(_amount, reference, sender, items)
       url_redirect = Setting.get('pagseguro_url_redirect')
       url_notify = Setting.get('pagseguro_url_notify')
 
       body = {
         reference_id: reference,
-        expiration_date: (Time.now + 3600).strftime("%Y-%m-%dT%H:%M:%S%:z"),
+        expiration_date: (Time.now + 3600).strftime('%Y-%m-%dT%H:%M:%S%:z'),
         customer: {
           tax_id: sender[:cpf],
           name: sender[:name],
@@ -137,28 +94,28 @@ class PagSeguro::Helper
         customer_modifiable: true,
         payment_methods: [
           {
-            type: "credit_card",
+            type: 'credit_card',
             brands: [
-              "mastercard"
+              'mastercard'
             ]
           },
           {
-            type: "credit_card",
+            type: 'credit_card',
             brands: [
-              "visa"
+              'visa'
             ]
           },
           {
-            type: "debit_card",
+            type: 'debit_card',
             brands: [
-              "visa"
+              'visa'
             ]
           },
+          # {
+          #   type: 'PIX'
+          # },
           {
-            type: "PIX"
-          },
-          {
-            type: "BOLETO"
+            type: 'BOLETO'
           }
         ],
         redirect_url: url_redirect,
@@ -166,90 +123,16 @@ class PagSeguro::Helper
           url_notify
         ]
       }
-      body[:items] = items.map { |item| {
-        reference_id: item[:id],
-        name: item[:description],
-        quantity: item[:quantity],
-        unit_amount: item[:amount]
-      }}
-
-      body
-    end
-
-    def generate_payload(amount, reference, sender, items)
-      total_items_amount = items.map { |item| item[:amount] }.sum
-      extra = -(total_items_amount - (amount / 100.00))
-      body = "
-        <checkout>
-          <sender>
-            <name>#{sender[:name]}</name>
-            <email>#{sender[:email]}</email>
-            <documents>
-              <document>
-                <type>#{sender[:document][:type]}</type>
-                <value>#{sender[:document][:value]}</value>
-              </document>
-            </documents>
-          </sender>
-          <currency>BRL</currency>
-          <items>"
-          items.each do |item|
-            body += "  <item>\n"
-            body += "    <id>#{item[:id]}</id>\n"
-            body += "    <description>#{item[:description]}</description>\n"
-            body += "    <amount>#{format("%.2f", item[:amount])}</amount>\n"
-            body += "    <quantity>#{item[:quantity]}</quantity>\n"
-            body += "  </item>\n"
-          end    
-
-      body += "</items>
-          <redirectURL>#{Setting.get('pagseguro_url_redirect')}</redirectURL>
-          <notificationURL>#{Setting.get('pagseguro_url_notify')}</notificationURL>
-          <reference>#{reference}</reference>
-          <extraAmount>#{format("%.2f", extra)}</extraAmount>
-          <receiver>
-            <email>#{Setting.get('pagseguro_email')}</email>
-          </receiver>
-        </checkout>
-      "
-      body
-    end
-
-    def make_pagseguro_request(payload)
-      email = Setting.get('pagseguro_email')
-      token = Setting.get('pagseguro_token')
-      is_production = Setting.get('pagseguro_production')
-
-      if !is_production
-        endpoint = "https://ws.sandbox.pagseguro.uol.com.br/v2/checkout"
-        endpoint_redirect = "https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html"
-      else
-        endpoint = "https://ws.pagseguro.uol.com.br/v2/checkout"
-        endpoint_redirect = "https://pagseguro.uol.com.br/v2/checkout/payment.html"
+      body[:items] = items.map do |item|
+        {
+          reference_id: item[:id],
+          name: item[:description],
+          quantity: item[:quantity],
+          unit_amount: item[:amount]
+        }
       end
 
-      uri = URI(endpoint)
-      puts uri
-
-      Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
-        request = Net::HTTP::Post.new(uri.path.concat("?email=#{email}&token=#{token}"))
-
-        response = http.request request
-        request['Content-Type'] = 'application/xml;charset=ISO-8859-1'
-      
-        request.body = payload
-        response = http.request request
-
-        if response.code.to_i == 200
-          puts "RTESPONSE #{response.body}"
-          code = extract_code_from_xml(response.body)
-          { code: code, url: "#{endpoint_redirect}?code=#{code}" }
-        else
-          puts "Erro na requisição POST. Código de resposta: #{response.code}"
-          puts "Erro na requisição POST. Código de resposta: #{response.body}"
-          { error: response.body }
-        end
-      end
+      body
     end
 
     def create_checkout(payload)
@@ -257,11 +140,11 @@ class PagSeguro::Helper
       token = Setting.get('pagseguro_token')
       is_production = Setting.get('pagseguro_production')
 
-      if !is_production
-        endpoint = "https://sandbox.api.pagseguro.com/checkouts"
-      else
-        endpoint = "https://api.pagseguro.com/checkouts"
-      end
+      endpoint = if is_production
+                   'https://api.pagseguro.com/checkouts'
+                 else
+                   'https://sandbox.api.pagseguro.com/checkouts'
+                 end
 
       uri = URI(endpoint)
       puts uri
@@ -270,7 +153,7 @@ class PagSeguro::Helper
         request = Net::HTTP::Post.new(uri)
 
         response = http.request request
-        request['Content-Type'] = "application/json"
+        request['Content-Type'] = 'application/json'
         request['Authorization'] = "Bearer #{token}"
 
         puts payload
@@ -280,9 +163,9 @@ class PagSeguro::Helper
 
         if response.code.to_i == 201
           puts "RESPONSE #{response.body}"
-          result = JSON.parse(response.body) 
+          result = JSON.parse(response.body)
           pay_url = result['links'].find { |link| link['rel'] == 'PAY' }['href']
-          { url: pay_url, code: pay_url.match(/code=([^&]+)/)[1]}
+          { url: pay_url, code: pay_url.match(/code=([^&]+)/)[1] }
         else
           puts "Erro na requisição POST. Código de resposta: #{response.code}"
           puts "Erro na requisição POST. Código de resposta: #{response.body}"
@@ -291,29 +174,16 @@ class PagSeguro::Helper
       end
     end
 
-    def extract_code_from_xml(xml_string)
-      code_start = xml_string.index("<code>")
-      code_end = xml_string.index("</code>")
-    
-      if code_start && code_end
-        code_start += "<code>".length
-        code = xml_string[code_start...code_end]
-        code.strip
-      else
-        nil
-      end
-    end
-
     def get_transaction_by_code(code)
       email = Setting.get('pagseguro_email')
       token = Setting.get('pagseguro_token')
       is_production = Setting.get('pagseguro_production')
 
-      if !is_production
-        endpoint = "https://ws.sandbox.pagseguro.uol.com.br/v3/transactions/notifications/"
-      else
-        endpoint = "https://ws.pagseguro.uol.com.br/v3/transactions/notifications/"
-      end
+      endpoint = if is_production
+                   'https://ws.pagseguro.uol.com.br/v3/transactions/notifications/'
+                 else
+                   'https://ws.sandbox.pagseguro.uol.com.br/v3/transactions/notifications/'
+                 end
 
       uri = URI(endpoint)
       puts uri
@@ -336,23 +206,15 @@ class PagSeguro::Helper
 
     private
 
-    def generate_document(customer)
-      if customer.organization?
-        return { type: "CNPJ", value: customer.profile.cpf.gsub(/\D/, '') }
-      else
-        return { type: "CPF", value: customer.profile.cpf .gsub(/\D/, '')}
-      end
-    end
-
     def extract_status_and_code_from_xml(xml)
-      status = xml.match(/<status>(.*?)<\/status>/m)&.captures&.first
-      code = xml.match(/<reference>(.*?)<\/reference>/m)&.captures&.first
-    
+      status = xml.match(%r{<status>(.*?)</status>}m)&.captures&.first
+      code = xml.match(%r{<reference>(.*?)</reference>}m)&.captures&.first
+
       if status && code
-        result = { status: status, code: code }
-        return result
+        { status: status, code: code }
+
       else
-        return nil
+        nil
       end
     end
   end
