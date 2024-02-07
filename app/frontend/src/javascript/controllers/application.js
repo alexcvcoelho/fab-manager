@@ -137,6 +137,7 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
             Group.query(function (groups) {
               $scope.groups = groups;
               $scope.enabledGroups = groups.filter(g => !g.disabled);
+              $scope.user.group_id = $scope.enabledGroups.find(g => g.name === 'Outros').id;
             });
 
             // retrieve all brazillian states
@@ -228,9 +229,7 @@ Application.Controllers.controller('ApplicationController', ['$rootScope', '$sco
                 $scope.brazillianCities = cities;
                 $scope.city_origin_enabled = true;
               });
-            };
-
-            $scope.group_id = 6;
+            };            
 
             $scope.ocupacional_status = [
               { id: 1, name: 'Empregado' },
