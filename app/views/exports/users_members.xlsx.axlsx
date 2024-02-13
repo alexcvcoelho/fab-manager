@@ -10,14 +10,22 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_members.members'))) do |
   # heading labels
   columns = [t('export_members.id'),
              t('export_members.external_id'),
-             t('export_members.surname'),
+             t('export_members.cpf'),
              t('export_members.first_name'),
+             t('export_members.surname'),
+             t('export_members.social_name'),           
              t('export_members.email'),
              t('export_members.newsletter'),
              t('export_members.last_login'),
              t('export_members.gender'),
              t('export_members.age'),
-             t('export_members.address'),
+             t('export_members.zipcode'),
+             t('export_members.street'),
+             t('export_members.neighborhood'),
+             t('export_members.number'),
+             t('export_members.complement'),
+             t('export_members.city'),
+             t('export_members.state'),
              t('export_members.phone'),
              t('export_members.website'),
              t('export_members.job'),
@@ -35,7 +43,18 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_members.members'))) do |
              t('export_members.echo_sciences'),
              t('export_members.organization'),
              t('export_members.organization_address'),
-             t('export_members.note')]
+             t('export_members.note'),
+             t('export_members.rg'),
+             t('export_members.rg_date_emission'),
+             t('export_members.rg_issuing_organization'),
+             t('export_members.rg_issuing_state'),
+             t('export_members.mother_name'),
+             t('export_members.financial_responsible_cpf'),
+             t('export_members.financial_responsible_name'),
+             t('export_members.occupational_status'),
+             t('export_members.education_level'),
+             t('export_members.origin_state'),
+             t('export_members.origin_city')]
   sheet.add_row columns, style: header
 
   # data rows
@@ -44,14 +63,22 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_members.members'))) do |
     data = [
       member.id,
       member.invoicing_profile.external_id || '',
-      member.profile.last_name,
+      member.profile.cpf,
       member.profile.first_name,
+      member.profile.last_name,
+      member.profile.social_name,
       member.email,
       member.is_allow_newsletter,
       member.last_sign_in_at&.to_date,
       member.statistic_profile.gender ? t('export_members.man') : t('export_members.woman'),
       member.statistic_profile.age,
-      member.invoicing_profile&.address&.address || '',
+      member.profile.zipcode,
+      member.profile.street,
+      member.profile.neighborhood,
+      member.profile.number,
+      member.profile.complement,
+      member.profile.city,
+      member.profile.state,
       member.profile.phone,
       member.profile.website,
       member.profile.job,
@@ -69,13 +96,24 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_members.members'))) do |
       member.profile.echosciences || '',
       member.invoicing_profile&.organization&.name || '',
       member.invoicing_profile&.organization&.address&.address || '',
-      ActionController::Base.helpers.sanitize(member.profile.note, tags: []) || ''
+      ActionController::Base.helpers.sanitize(member.profile.note, tags: []) || '',
+      member.profile.rg || '',
+      member&.profile&.rg_date_emission&.to_date || nil,
+      member.profile.rg_issuing_organization || '',
+      member.profile.rg_issuing_state || '',
+      member.profile.mother_name || '',
+      member.profile.financial_responsible_cpf || '',
+      member.profile.financial_responsible_name || '',
+      member.profile.occupational_status || '',
+      member.profile.education_level || '',
+      member.profile.origin_state || '',
+      member.profile.origin_city || ''
     ]
-    styles = [nil, nil, nil, nil, nil, nil, date, nil, nil, nil, nil, nil, nil, nil,
-              nil, nil, nil, date, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil]
+    styles = [nil, nil, nil, nil, nil, nil, nil, nil, date, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+              nil, nil, date, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, date, nil, nil, nil, nil, nil, nil, nil, nil, nil]
 
-    types = %i[integer string string string string boolean date string integer string string string string string
-               string string string date string string integer string string string string string string string string]
+    types = %i[integer string string string string string string boolean date string integer string string string integer string string string string string string string string
+               string string date string string integer string string string string string string string string date string string string string string string string string string]
 
     sheet.add_row data, style: styles, types: types
   end
