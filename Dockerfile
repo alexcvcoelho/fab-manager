@@ -70,6 +70,11 @@ VOLUME /usr/src/app/invoices \
 # Expose port 3000 to the Docker host, so we can access it from the outside
 EXPOSE 3000
 
+# Permission to evit access denied for supervisor
+RUN chmod -R a+w /usr/src/app
+RUN chmod -R a+w /var/run
+RUN chmod -R a+w /var/log
+
 # The main command to run when the container starts. Also tell the Rails server
 # to bind to all interfaces by default.
 COPY docker/supervisor.conf /etc/supervisor/conf.d/fabmanager.conf
