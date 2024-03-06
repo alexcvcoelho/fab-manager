@@ -5,6 +5,38 @@ wb = xlsx_package.workbook
 header = wb.styles.add_style b: true, bg_color: Stylesheet.primary.upcase.gsub('#', 'FF'), fg_color: 'FFFFFFFF'
 date = wb.styles.add_style format_code: Rails.application.secrets.excel_date_format
 
+occupational_status = {
+  '1' => 'Empregado',
+  '2' => 'Desempregado',
+  '3' => 'Empregador',
+  '4' => 'Autônomo/Conta Própria',
+  '5' => 'Profissional Liberal',
+  '6' => '1º Emprego',
+  '7' => 'Aposentado',
+  '8' => 'Microempreendedor Individual - MEI',
+  '9' => 'Aprendiz com contrato'
+}
+
+educational_levels = {
+  '1' => 'Analfabeto',
+  '2' => 'Até o 5º ano incompleto do ensino fundamental',
+  '3' => '5º ano completo do ensino fundamental',
+  '4' => 'Do 6º ao 9º ano do ensino fundamental',
+  '5' => 'Ensino fundamental completo',
+  '6' => 'Ensino médio incompleto',
+  '7' => 'Ensino médio completo',
+  '8' => 'Educação superior incompleto',
+  '9' => 'Educação superior completo',
+  'A' => 'Pós Grad. incompleto',
+  'B' => 'Pós Grad. completo',
+  'C' => 'Mestrado incompleto',
+  'D' => 'Mestrado completo',
+  'E' => 'Doutorado incompleto',
+  'F' => 'Doutorado completo',
+  'G' => 'Pós Dout. incompleto',
+  'H' => 'Pós Dout. completo',
+}
+
 wb.add_worksheet(name: ExcelService.name_safe(t('export_members.members'))) do |sheet|
   ## data table
   # heading labels
@@ -104,8 +136,8 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_members.members'))) do |
       member.profile.mother_name || '',
       member.profile.financial_responsible_cpf || '',
       member.profile.financial_responsible_name || '',
-      member.profile.occupational_status || '',
-      member.profile.education_level || '',
+      member.profile.occupational_status ? occupational_status[member.profile.occupational_status] : '',
+      member.profile.education_level ? educational_levels[member.profile.education_level] : '',
       member.profile.origin_state || '',
       member.profile.origin_city || ''
     ]
