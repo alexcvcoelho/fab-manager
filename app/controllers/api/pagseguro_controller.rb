@@ -69,9 +69,10 @@ class API::PagseguroController < API::PaymentsController
     end
 
     pagseguro_intent.status = 'paid'
+    pagseguro_intent.payload = params.to_json
     pagseguro_intent.save
 
-    render status: :ok
+    render json: { success: true }, status: :ok
   end
 
   def on_payment_success(order_id, cart)
