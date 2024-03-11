@@ -246,7 +246,7 @@ pt:
         date: "Data"
         operation: 'Operação'
         operator: 'Operador'
-        amount: 'Montante'
+        amount: 'Valor'
         credit: 'Crédito'
         debit: 'Débito'
         credit_title: 'Crédito na carteira'
@@ -414,7 +414,7 @@ pt:
         price: "Preço"
         customer: "Cliente"
         deadline: "Prazo"
-        amount: "Montante"
+        amount: "Valor"
         state: "Estado"
         download: "Baixar"
         state_new: "Ainda não vencido"
@@ -511,7 +511,8 @@ pt:
             delivered: "Entregue"
           payment:
             by_wallet: "por carteira"
-            settlement_by_debit_card: "Pagamento com cartão de débito"
+            settlement_by_debit_card: "Pagamento por cartão de crédito"
+            settlement_by_boleto: "Pagamento por boleto"
             settlement_done_at_the_reception: "Pagamento realizado na recepção"
             settlement_by_wallet: "Pagamento com carteira"
             on_DATE_at_TIME: "em {DATE} às {TIME},"

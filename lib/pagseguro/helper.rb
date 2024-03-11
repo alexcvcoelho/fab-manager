@@ -174,19 +174,6 @@ class PagSeguro::Helper
       end
     end
 
-    def get_info_from_webhook_response(payload)
-      data = JSON.parse(payload, symbolize_names: true)
-      charge_data = data[:charges][0]
-      return {
-        order_id: data[:id],
-        reference_id: data[:reference_id],
-        status: charge_data[:status],
-        paid_at: charge_data[:paid_at],
-        method: charge_data[:payment_method][:type],
-        nsu: charge_data[:payment_response][:raw_data][:nsu]
-      }
-    end
-
     def get_transaction_by_code(code)
       email = Setting.get('pagseguro_email')
       token = Setting.get('pagseguro_token')

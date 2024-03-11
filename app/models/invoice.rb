@@ -161,7 +161,7 @@ class Invoice < PaymentDocument
   def payment_means
     res = []
     res.push(means: :wallet, amount: wallet_amount) if paid_by_wallet?
-    if paid_by_card?
+    if paid_by_card? || paid_by_boleto?
       res.push(means: :card, amount: amount_paid)
     else
       res.push(means: :other, amount: amount_paid)
@@ -172,7 +172,7 @@ class Invoice < PaymentDocument
   def payment_details(mean)
     case mean
     when :card
-      if paid_by_card?
+      if paid_by_card? || paid_by_boleto?
         {
           payment_mean: mean,
           gateway_object_id: payment_gateway_object.gateway_object_id,
@@ -192,6 +192,10 @@ class Invoice < PaymentDocument
 
   def paid_by_card?
     payment_method == 'card'
+  end
+
+  def paid_by_boleto?
+    payment_method == 'boleto'
   end
 
   def paid_by_wallet?

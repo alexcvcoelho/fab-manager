@@ -54,6 +54,8 @@ export const ShowOrder: React.FC<ShowOrderProps> = ({ orderId, currentUser, onSu
     let paymentVerbose = '';
     if (order.payment_method === 'card') {
       paymentVerbose = t('app.shared.store.show_order.payment.settlement_by_debit_card');
+    } else if (order.payment_method === 'boleto') {
+      paymentVerbose = t('app.shared.store.show_order.payment.settlement_by_boleto');
     } else if (order.payment_method === 'wallet') {
       paymentVerbose = t('app.shared.store.show_order.payment.settlement_by_wallet');
     } else {

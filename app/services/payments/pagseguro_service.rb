@@ -29,8 +29,8 @@ class Payments::PagseguroService
     { order: order, payment: result}
   end
 
-  def confirm_payment(order, coupon_code, payment_id)
-    o = payment_success(order, coupon_code, 'card', payment_id, 'PagSeguro::Order')
+  def confirm_payment(order, coupon_code, payment_id, payment_method)
+    o = payment_success(order, coupon_code, payment_method, payment_id, 'PagSeguro::Order')
     { order: o }
   end
 end

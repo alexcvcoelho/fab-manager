@@ -46,12 +46,15 @@ class API::PagseguroController < API::PaymentsController
     render(json: { error: 'Bad gateway or online payment is disabled' }, status: :bad_gateway) and return unless PagSeguro::Helper.enabled?
 
     pagseguro_intent = PagseguroIntent.find_by(reference_code: params['reference_id'])
-    render json: { success: true }, status: :ok and return if pagseguro_intent.status == 'paid'
+    # render json: { success: true }, status: :ok and return if pagseguro_intent.status == 'paid'
 
     @order_id = params['id']
     @charges = params['charges']
     render json: { success: false, message: 'Empty Charges' }, status: :ok and return if @charges.empty?
     render json: { success: false, message: 'Charge not payed' }, status: :ok and return if @charges.first['status'] != 'PAID'
+
+    pagseguro_intent.payload = params.to_json
+    pagseguro_intent.order_id = @order_id
 
     if pagseguro_intent.transaction_type == 'reservable'
       cart_hash = JSON.parse(pagseguro_intent[:shopping_cart], symbolize_names: true)
@@ -59,17 +62,18 @@ class API::PagseguroController < API::PaymentsController
       operator = User.find(cart_hash[:operator_id])
       cs = CartService.new(operator)
       cart = cs.from_hash(cart_hash)
+      puts cart
+      cart.payment_method = pagseguro_intent.payment_method?
       on_payment_success(@order_id, cart)
     end
 
     if pagseguro_intent.transaction_type == 'store'
       data = JSON.parse(pagseguro_intent[:shopping_cart], symbolize_names: true)
       order = Order.find_by(token: data[:token])
-      Payments::PagseguroService.new.confirm_payment(order, data[:coupon_code], @order_id)
+      Payments::PagseguroService.new.confirm_payment(order, data[:coupon_code], @order_id, pagseguro_intent.payment_method?)
     end
 
     pagseguro_intent.status = 'paid'
-    pagseguro_intent.payload = params.to_json
     pagseguro_intent.save
 
     render json: { success: true }, status: :ok

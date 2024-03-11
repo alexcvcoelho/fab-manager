@@ -115,7 +115,7 @@ pt:
     including_VAT_RATE: "Incluindo %{NAME} %{RATE}% de %{AMOUNT}"
     including_total_excluding_taxes: "Incluindo total de faixas exclusas"
     including_amount_payed_on_ordering: "Incluindo o valor pago na encomenda"
-    total_amount: "Montante total"
+    total_amount: "Valor total"
     refund_on_DATE: "Reembolso em %{DATE}"
     by_card_online_payment: "via cartão (pagamento online)"
     by_cheque: "em cheque"
@@ -123,11 +123,12 @@ pt:
     by_cash: "em dinheiro"
     by_wallet: "pela carteira"
     no_refund: "Sem reembolso"
-    settlement_by_debit_card: "Liquidação por cartão de débito"
+    settlement_by_debit_card: "Pagamento realizado por cartão de crédito"
+    settlement_by_boleto: "Pagamento realizado por boleto"
     settlement_done_at_the_reception: "Liquidação feita na recepção"
     settlement_by_wallet: "Liquidação por carteira"
     on_DATE_at_TIME: "em %{DATE} ás %{TIME},"
-    for_an_amount_of_AMOUNT: "para uma quantidade de %{AMOUNT}"
+    for_an_amount_of_AMOUNT: "no valor de %{AMOUNT}"
     on_DATE_from_START_to_END: "Em %{DATE} de %{START} até %{END}" #eg: on feb. 7 from 7AM to 9AM
     from_STARTDATE_to_ENDDATE_from_STARTTIME_to_ENDTIME: "De %{STARTDATE} até %{ENDDATE}, das %{STARTTIME} ás %{ENDTIME}" #eg: from feb. 7 to feb. 10, from 6PM to 10PM
     subscription_of_NAME_for_DURATION_starting_from_DATE: "Assinatura de %{NAME} de %{DURATION} começando em %{DATE}"
@@ -137,7 +138,7 @@ pt:
     error_invoice: "Esta fatura está incorreta. Os itens abaixo que não foram reservados. Por favor contate o FabLab para um reembolso."
     prepaid_pack: "Pacote de horas pré-pago"
     pack_item: "Pacote de %{COUNT} horas para a %{ITEM}"
-    order: "Your order on the store"
+    order: "Compra em nossa loja"
     unable_to_find_pdf: "We cannot find your invoice. If you ordered recently, it may have not been generated yet. Please retry in a moment."
   #PDF payment schedule generation
   payment_schedules:
@@ -436,7 +437,7 @@ pt:
       notify_admin_objects_stripe_sync:
         all_objects_sync: "Todos os dados foram sincronizados com sucesso no Stripe."
       notify_admin_order_is_paid:
-        order_paid_html: "A new order has been placed. <a href='/#!/admin/store/orders/%{ID}'>View details</a>."
+        order_paid_html: "Uma nova fatura foi gerada. <a href='/#!/admin/store/orders/%{ID}'>Ver detalhes</a>."
       notify_user_when_payment_schedule_ready:
         your_schedule_is_ready_html: "Sua fatura #%{REFERENCE}, de %{AMOUNT}, está pronta. <a href='api/invoices/%{SCHEDULE_ID}/download' target='_blank'>Clique aqui para fazer o download</a>."
       notify_admin_payment_schedule_error:
