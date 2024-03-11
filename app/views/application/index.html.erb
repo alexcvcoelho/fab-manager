@@ -9,6 +9,16 @@
 
   <title><%=Setting.get('fablab_name')%></title>
 
+  <!-- Google Tag Manager --> 
+
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': 
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], 
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); 
+  })(window,document,'script','dataLayer','GTM-TLNMP2R');</script>
+  <!-- End Google Tag Manager --> 
+
+
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic,700,800,700italic' rel='stylesheet' type='text/css'>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700,300italic' rel='stylesheet' type='text/css'>
   <link href='https://fonts.googleapis.com/css?family=Loved+by+the+King' rel='stylesheet' type='text/css'>
@@ -100,6 +110,12 @@
 <body ng-controller="ApplicationController"
       ng-init="setCurrentUser(<%= current_user ? current_user.to_json : 'null' %>)"
       ng-cloak>
+
+  <!-- Google Tag Manager (noscript) --> 
+  <noscript><iframe src=https://www.googletagmanager.com/ns.html?id=GTM-TLNMP2R
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> 
+  <!-- End Google Tag Manager (noscript) -->
+
   <div growl></div>
 
   <%= flash_messages %>
