@@ -171,7 +171,7 @@ class Invoice < PaymentDocument
 
   def payment_details(mean)
     case mean
-    when :card
+    when [:card, :boleto]
       if paid_by_card? || paid_by_boleto?
         {
           payment_mean: mean,

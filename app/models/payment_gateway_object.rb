@@ -4,6 +4,7 @@ require 'payment/item_builder'
 
 # A link between an object in the local database and another object in the remote payment gateway database
 class PaymentGatewayObject < ApplicationRecord
+  belongs_to :pagseguro_intent, primary_key: "order_id", foreign_key: "gateway_object_id", inverse_of: :payment_gateway_object
   belongs_to :item, polymorphic: true
   belongs_to :invoice, foreign_key: 'item_id', inverse_of: :payment_gateway_object
   belongs_to :invoice_item, foreign_key: 'item_id', inverse_of: :payment_gateway_object

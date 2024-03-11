@@ -1,4 +1,6 @@
 class PagseguroIntent < ApplicationRecord
+    has_one :payment_gateway_object, required: false 
+
     validates :reference_code, presence: true
     validates :payment_code, presence: true
     validates :shopping_cart, presence: true
@@ -22,7 +24,7 @@ class PagseguroIntent < ApplicationRecord
         if (data == nil) 
             return nil
         end
-        if (payment_method == 'boleto')
+        if (payment_method? == 'boleto')
             return nil
         end
         return data[:charges][0][:payment_response][:raw_data][:nsu]
@@ -42,6 +44,22 @@ class PagseguroIntent < ApplicationRecord
             return nil
         end
         return data[:charges][0][:paid_at]
+    end
+
+    def installments
+        data = payload_data
+        if (data == nil) 
+            return nil
+        end
+        return data[:charges][0][:payment_method][:installments]
+    end
+
+    def paid_value
+        data = payload_data
+        if (data == nil) 
+            return nil
+        end
+        return data[:charges][0][:amount][:value]/ 100.00
     end
 
     private

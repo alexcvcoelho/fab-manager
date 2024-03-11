@@ -11,12 +11,16 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_reservations.reservation
   # heading labels
   columns = [t('export_reservations.customer_id'), t('export_reservations.customer'), t('export_reservations.email'),
              t('export_reservations.reservation_date'), t('export_reservations.reservation_type'), t('export_reservations.reservation_object'),
-             t('export_reservations.slots_number_hours_tickets'), t('export_reservations.payment_method'), t('export_reservations.coupon')]
+             t('export_reservations.slots_number_hours_tickets'), t('export_reservations.payment_method'), t('export_reservations.coupon'),
+             t('export_reservations.pagseguro_identifier'), t('export_reservations.nsu'),  t('export_reservations.paid_at'), t('export_reservations.installments'),
+             t('export_reservations.paid_value')]
   sheet.add_row columns, style: header
 
   # data rows
   reservations.each do |resrv|
     invoice = resrv.original_invoice
+    payment_gateway_object = invoice.payment_gateway_object
+    pagseguro_intent = payment_gateway_object&.pagseguro_intent
     data = [
       resrv.user&.id,
       resrv.user&.profile&.full_name || t('export_reservations.deleted_user'),
@@ -25,11 +29,16 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_reservations.reservation
       resrv.reservable_type,
       resrv.reservable.nil? ? '' : resrv.reservable.name,
       resrv.reservable_type == 'Event' ? resrv.total_booked_seats : resrv.slots.count,
-      invoice&.paid_by_card? ? t('export_reservations.online_payment') : t('export_reservations.local_payment'),
-      invoice&.coupon&.nil? ? '' : invoice&.coupon&.name
+      invoice&.paid_by_card? ? t('export_reservations.online_payment') : invoice&.paid_by_boleto? ? t('export_reservations.boleto')  : t('export_reservations.local_payment'),
+      invoice&.coupon&.nil? ? '' : invoice&.coupon&.name,
+      pagseguro_intent&.order_id,
+      pagseguro_intent&.nsu,
+      pagseguro_intent&.paid_at&.to_date,
+      pagseguro_intent&.installments,      
+      number_to_currency(pagseguro_intent&.paid_value)
     ]
-    styles = [nil, nil, nil, date, nil, nil, nil, nil]
-    types = %i[integer string string date string string integer string]
+    styles = [nil, nil, nil, date, nil, nil, nil, nil, nil, nil, nil, date, nil, nil]
+    types = %i[integer string string date string string integer string string string string date integer string]
 
     sheet.add_row data, style: styles, types: types
   end

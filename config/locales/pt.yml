@@ -258,9 +258,15 @@ pt:
     slots_number_hours_tickets: "Número de slots (horas/tickets)"
     payment_method: "Método de pagamento"
     local_payment: "Pagamento na recepção"
-    online_payment: "Pagamento online"
+    online_payment: "Cartão de Crédito"
+    boleto: "Boleto"
     deleted_user: "Usuário deletado"
-    coupon: "Cupão usado"
+    coupon: "Cupon usado"
+    pagseguro_identifier: "Identificador Pagseguro"
+    nsu: "NSU"
+    paid_at: "Data do pagamento"
+    installments: "Qtde. Parcelas"
+    paid_value: "Valor pago"
   #subscriptions list export to EXCEL format
   export_subscriptions:
     subscriptions: "Assinaturas"
