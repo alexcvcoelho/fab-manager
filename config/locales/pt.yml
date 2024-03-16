@@ -215,6 +215,7 @@ pt:
     validated_trainings: "Habilitações validados"
     tags: "Tags"
     number_of_invoices: "Número de faturas"
+    wallet: "Saldo em carteira"
     projects: "Projetos"
     facebook: "Facebook"
     twitter: "Twitter"

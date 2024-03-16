@@ -69,6 +69,7 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_members.members'))) do |
              t('export_members.validated_trainings'),
              t('export_members.tags'),
              t('export_members.number_of_invoices'),
+             t('export_members.wallet'),
              t('export_members.projects'),
              t('export_members.facebook'),
              t('export_members.twitter'),
@@ -122,6 +123,7 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_members.members'))) do |
       member.trainings.map(&:name).join("\n"),
       member.tags.map(&:name).join("\n"),
       member.invoices.size,
+      number_to_currency(member.wallet&.amount),
       member.projects.map(&:name).join("\n"),
       member.profile.facebook || '',
       member.profile.twitter || '',
@@ -142,10 +144,10 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_members.members'))) do |
       member.profile.origin_city || ''
     ]
     styles = [nil, nil, nil, nil, nil, nil, nil, nil, date, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-              nil, nil, date, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, date, nil, nil, nil, nil, nil, nil, nil, nil, nil]
+              nil, nil, date, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, date, nil, nil, nil, nil, nil, nil, nil, nil, nil]
 
     types = %i[integer string string string string string string boolean date string integer string string string integer string string string string string string string string
-               string string date string string integer string string string string string string string string date string string string string string string string string string]
+               string string date string string integer string string string string string string string string string date string string string string string string string string string]
 
     sheet.add_row data, style: styles, types: types
   end
