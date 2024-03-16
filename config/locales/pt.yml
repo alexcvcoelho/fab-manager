@@ -250,6 +250,7 @@ pt:
   export_reservations:
     reservations: "Reservas"
     customer_id: "ID do cliente"
+    cpf: "CPF/CNPJ"
     customer: "Cliente"
     email: "E-mail"
     reservation_date: "Data de reserva"
@@ -267,6 +268,7 @@ pt:
     paid_at: "Data do pagamento"
     installments: "Qtde. Parcelas"
     paid_value: "Valor pago"
+    slots_reserved: "Datas reservadas"
   #subscriptions list export to EXCEL format
   export_subscriptions:
     subscriptions: "Assinaturas"

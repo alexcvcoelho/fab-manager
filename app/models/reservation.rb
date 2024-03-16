@@ -73,6 +73,19 @@ class Reservation < ApplicationRecord
                  .first
   end
 
+  def slots_to_string
+    grouped = grouped_slots
+    response = ""
+    grouped.each do |date_key, date_value|
+      date_value.each do |hour_key, hour_value|
+        start_at = hour_value.first[:start_at]
+        end_at = hour_value.last[:end_at]
+        response += "#{hour_key.strftime("%d/%m/%Y %H:%M")} (#{start_at.strftime("%H:%M")} - #{end_at.strftime("%H:%M")}) \n"
+      end
+    end
+    response
+  end
+
   # Group all slots related to this reservation by dates and by continuous time ranges
   def grouped_slots
     slots_by_date = slots.group_by { |slot| slot[:start_at].to_date }.transform_values { |slots| slots.sort_by { |slot| slot[:start_at] } }
