@@ -92,7 +92,7 @@ pt:
     reservation_of_USER_on_DATE_at_TIME: "Reserva de %{USER} em %{DATE} ás %{TIME}"
     cancellation: "Cancelamento"
     object: "Objeto:"
-    order_summary: "Sumário de ordem:"
+    order_summary: "Itens:"
     details: "Detalhes"
     amount: "Montante"
     subscription_extended_for_free_from_START_to_END: "Assinatura grátis extendida - De %{START} até %{END}"

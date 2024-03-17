@@ -37,6 +37,16 @@ class Invoices::PaymentDetailsService
                                " #{I18n.t('invoices.for_an_amount_of_AMOUNT', **{ AMOUNT: number_to_currency(wallet_amount) })}"
                              end
         end
+
+        if invoice.payment_gateway_object
+          pagseguro_intent = PagseguroIntent.find_by(order_id: invoice.payment_gateway_object.gateway_object_id)
+          if pagseguro_intent
+            if pagseguro_intent.payment_method? == 'card'
+              payment_verbose += " - Pago #{pagseguro_intent.installments > 1 ? "em #{pagseguro_intent.installments} vezes" : " à vista"} - NSU: #{pagseguro_intent.nsu}"
+            end
+            payment_verbose += " - Data da confirmação: #{I18n.l(pagseguro_intent.paid_at.to_date)}"
+          end
+        end
         payment_verbose
       end
     end
