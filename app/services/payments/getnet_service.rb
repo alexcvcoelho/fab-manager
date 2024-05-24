@@ -2,7 +2,7 @@
 
 # Provides methods for pay cart by PayZen
 class Payments::PayzenService
-  require 'pay_zen/helper'
+  require 'getnet/helper'
   require 'pay_zen/order'
   require 'pay_zen/charge'
   require 'pay_zen/service'
