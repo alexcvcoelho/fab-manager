@@ -165,6 +165,13 @@ export const payzenSettings = [
   'payzen_currency'
 ] as const;
 
+export const getnetSettings = [
+  'getnet_endpoint',
+  'getnet_seller_id',
+  'getnet_client_id',
+  'getnet_client_secret'
+] as const;
+
 export const openLabSettings = [
   'openlab_app_id',
   'openlab_app_secret',
@@ -282,6 +289,7 @@ export const allSettings = [
   ...modulesSettings,
   ...stripeSettings,
   ...payzenSettings,
+  ...getnetSettings,
   ...openLabSettings,
   ...accountSettings,
   ...analyticsSettings,
