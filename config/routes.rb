@@ -256,6 +256,9 @@ Rails.application.routes.draw do
     post 'payzen/update_token' => 'payzen#update_token'
     post 'payzen/check_cart' => 'payzen#check_cart'
 
+    ## Getnet gateway
+    post 'getnet/sdk_test' => 'getnet#sdk_test'
+
     ## Pagseguro gateway
     post 'pagseguro/test_token' => 'pagseguro#test_token'
     post 'pagseguro/create_payment_link' => 'pagseguro#create_payment_link'

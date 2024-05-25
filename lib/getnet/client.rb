@@ -3,7 +3,7 @@ module Getnet; end
 API_AUTH_PATH = '/auth/oauth/v2/token'
 
 class Getnet::Client
-  def initialize(base_url: nil, client_id: nil, client_secret: nil, seller_id: mil)
+  def initialize(base_url: nil, client_id: nil, client_secret: nil, seller_id: nil)
     @base_url = base_url
     @client_id = client_id
     @client_secret = client_secret
@@ -23,8 +23,9 @@ class Getnet::Client
       'Content-Type' => 'application/x-www-form-urlencoded'
     }
 
-    res = Net::HTTP.post_form(uri, grant_type: 'client_credentials', scope: 'oob')
-    raise ::GetnetError unless res.is_a?(Net::HTTPSuccess)
+    res = Net::HTTP.post_form(uri, 'grant_type' => 'client_credentials', 'scope' => 'oob')
+    puts res.body
+    #raise ::GetnetError unless res.is_a?(Net::HTTPSuccess)
 
     json = JSON.parse(res.body)
     raise ::GetnetError, json['answer'] if json['status'] == 'ERROR'

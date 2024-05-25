@@ -8,7 +8,7 @@ import { FabInput } from '../../base/fab-input';
 import { Loader } from '../../base/loader';
 import { SettingName } from '../../../models/setting';
 import SettingAPI from '../../../api/setting';
-import PayzenAPI from '../../../api/payzen';
+import GetnetAPI from '../../../api/getnet';
 
 enableMapSet();
 
@@ -75,10 +75,11 @@ const GetnetKeysForm: React.FC<GetnetKeysFormProps> = ({ onValidKeys, onInvalidK
 
     if (valid && !pendingKeysValidation) {
       pendingKeysValidation = true;
-      PayzenAPI.chargeSDKTest(
-        settings.get('payzen_endpoint'),
-        settings.get('payzen_username'),
-        settings.get('payzen_password')
+      GetnetAPI.sdkTest(
+        settings.get('getnet_endpoint'),
+        settings.get('getnet_seller_id'),
+        settings.get('getnet_client_id'),
+        settings.get('getnet_client_secret')
       ).then(result => {
         pendingKeysValidation = false;
 
