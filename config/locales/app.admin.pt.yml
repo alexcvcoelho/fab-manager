@@ -1036,6 +1036,12 @@ pt:
           is_production: "Amibiente de produção"
           url_redirect: "Url para redirecionamento ao fim do checkout"
           url_notify: "Endpoint usado pela PagSeguro para envio do webhook"
+        getnet_keys_form:
+          getnet_keys_info_html: "<p>Para realizar transações pelo Gateway Getnet é necessário preencher as credenciais</p>"
+          seller_id: "Seller ID"
+          client_id: "Client ID"
+          client_secret: "Client Secret"
+          endpoint: "Endpoint"
         payment:
           payment_settings: "Configurações de pagamento"
           online_payment: "Pagamento Online"
@@ -1077,6 +1083,7 @@ pt:
             stripe: "Stripe"
             payzen: "PayZen"
             pagseguro: "PagSeguro"
+            getnet: "Getnet"
             confirm_button: "Validar o gateway"
         payment_schedules_list:
           filter_schedules: "Filtrar agendamentos"

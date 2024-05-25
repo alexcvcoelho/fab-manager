@@ -18,6 +18,7 @@ import { Gateway } from '../../models/gateway';
 import { SettingBulkResult, SettingName } from '../../models/setting';
 import { IApplication } from '../../models/application';
 import SettingAPI from '../../api/setting';
+import { GetnetKeysForm } from './getnet/getnet-keys-form';
 
 declare const Application: IApplication;
 
@@ -108,6 +109,14 @@ export const SelectGatewayModal: React.FC<SelectGatewayModalModalProps> = ({ isO
   };
 
   /**
+   * Callback triggered when the embedded form has validated all the Getnet keys
+   */
+  const handleValidGetnetKeys = (getnetKeys: Map<SettingName, string>): void => {
+    setGatewayConfig(getnetKeys);
+    setPreventConfirmGateway(false);
+  };
+
+  /**
    * Callback triggered when the embedded form has not validated all keys
    */
   const handleInvalidKeys = (): void => {
@@ -152,10 +161,12 @@ export const SelectGatewayModal: React.FC<SelectGatewayModalModalProps> = ({ isO
         <option value={Gateway.Stripe}>{t('app.admin.invoices.payment.select_gateway_modal.stripe')}</option>
         <option value={Gateway.PayZen}>{t('app.admin.invoices.payment.select_gateway_modal.payzen')}</option>
         <option value={Gateway.PagSeguro}>{t('app.admin.invoices.payment.select_gateway_modal.pagseguro')}</option>
+        <option value={Gateway.Getnet}>{t('app.admin.invoices.payment.select_gateway_modal.getnet')}</option>
       </select>
       {selectedGateway === Gateway.Stripe && <StripeKeysForm onValidKeys={handleValidStripeKeys} onInvalidKeys={handleInvalidKeys} />}
       {selectedGateway === Gateway.PayZen && <PayzenKeysForm onValidKeys={handleValidPayZenKeys} onInvalidKeys={handleInvalidKeys} />}
       {selectedGateway === Gateway.PagSeguro && <PagseguroKeysForm onValidKeys={handleValidPagSeguroKeys} onInvalidKeys={handleInvalidKeys} />}
+      {selectedGateway === Gateway.Getnet && <GetnetKeysForm onValidKeys={handleValidGetnetKeys} onInvalidKeys={handleInvalidKeys} />}
     </FabModal>
   );
 };
