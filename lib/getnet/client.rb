@@ -13,23 +13,23 @@ class Getnet::Client
   protected
 
   def auth
-    require 'uri'
-    require 'net/http'
-    require 'json'
-
     uri = URI(File.join(base_url, API_AUTH_PATH))
+  
+    params = {
+      'grant_type' => 'client_credentials',
+      'scope' => 'oob'
+    }
+    payload = URI.encode_www_form(params)
     headers = {
       'Authorization' => authorization_header,
       'Content-Type' => 'application/x-www-form-urlencoded'
     }
 
-    res = Net::HTTP.post_form(uri, 'grant_type' => 'client_credentials', 'scope' => 'oob')
-    puts res.body
-    #raise ::GetnetError unless res.is_a?(Net::HTTPSuccess)
+    res = Net::HTTP.post(uri, payload, headers)
 
     json = JSON.parse(res.body)
     raise ::GetnetError, json['answer'] if json['status'] == 'ERROR'
-
+  
     token(json)
   end
 

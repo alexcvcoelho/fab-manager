@@ -201,6 +201,10 @@ module SettingsHelper
     pagseguro_production
     pagseguro_url_notify
     pagseguro_url_redirect
+    getnet_seller_id
+    getnet_client_id
+    getnet_client_secret
+    getnet_endpoint
 
   ].freeze
 end

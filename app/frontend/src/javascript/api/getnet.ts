@@ -12,8 +12,8 @@ import { Invoice } from '../models/invoice';
 import { PaymentSchedule } from '../models/payment-schedule';
 
 export default class GetnetAPI {
-  static async sdkTest (endpoint: string, sellerId: string, clientId: string, secretId: string): Promise<SdkTestResponse> {
-    const res: AxiosResponse<SdkTestResponse> = await apiClient.post('/api/getnet/sdk_test', { endpoint, seller_id: sellerId, client_id: clientId, secret_id: secretId });
+  static async sdkTest (endpoint: string, sellerId: string, clientId: string, clientSecret: string): Promise<SdkTestResponse> {
+    const res: AxiosResponse<SdkTestResponse> = await apiClient.post('/api/getnet/sdk_test', { endpoint, seller_id: sellerId, client_id: clientId, client_secret: clientSecret });
     return res?.data;
   }
 

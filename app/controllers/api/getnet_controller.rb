@@ -10,9 +10,7 @@ class API::GetnetController < API::PaymentsController
     client = Getnet::Authentication.new(base_url: params[:endpoint], client_id: params[:client_id], client_secret: params[:client_secret])
     res = client.get_token
 
-    puts res
-
-    @status = (res['answer'] != "")
+    @status = (res != "")
   rescue SocketError
     @status = false
   end
