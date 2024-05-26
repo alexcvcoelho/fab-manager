@@ -14,6 +14,7 @@ import { Invoice } from '../../models/invoice';
 import SettingAPI from '../../api/setting';
 import { useTranslation } from 'react-i18next';
 import { Order } from '../../models/order';
+import { GetnetModal } from './getnet/getnet-modal';
 
 declare const Application: IApplication;
 
@@ -90,6 +91,21 @@ const CardPaymentModal: React.FC<CardPaymentModalProps> = ({ isOpen, toggleModal
   };
 
   /**
+   * Render the Getnet payment modal
+   */
+  const renderGetnetModal = (): ReactElement => {
+    return <GetnetModal isOpen={isOpen}
+      toggleModal={toggleModal}
+      afterSuccess={afterSuccess}
+      onError={onError}
+      cart={cart}
+      order={order}
+      currentUser={currentUser}
+      schedule={schedule}
+      customer={customer} />;
+  };
+
+  /**
    * Determine which gateway is enabled and return the appropriate payment modal
    */
   if (gateway === null || !isOpen) return <div/>;
@@ -101,6 +117,8 @@ const CardPaymentModal: React.FC<CardPaymentModalProps> = ({ isOpen, toggleModal
       return renderPayZenModal();
     case 'pagseguro':
       return renderPagSeguroModal();
+    case 'getnet':
+      return renderGetnetModal();
     case null:
     case undefined:
       onError(t('app.shared.card_payment_modal.online_payment_disabled'));

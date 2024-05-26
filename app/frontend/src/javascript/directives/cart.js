@@ -162,7 +162,7 @@ Application.Directives.directive('cart', ['$rootScope', '$uibModal', 'dialogs', 
          * Validates the shopping chart and redirect the user to the payment step
          */
         $scope.payCart = function () {
-        // first, we check that a user was selected
+          // first, we check that a user was selected
           if (Object.keys($scope.user).length > 0) {
             // check selected user has a subscription, if any slot is restricted for subscriptions
             const slotValidations = [];
