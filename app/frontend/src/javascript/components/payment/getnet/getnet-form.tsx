@@ -14,6 +14,7 @@ import { PaymentSchedule } from '../../../models/payment-schedule';
 import { Invoice } from '../../../models/invoice';
 import CheckoutAPI from '../../../api/checkout';
 import { Order } from '../../../models/order';
+import { FabInput } from '../../base/fab-input';
 
 // we use these two additional parameters to update the card, if provided
 interface PayzenFormProps extends GatewayFormProps {
@@ -26,7 +27,7 @@ interface PayzenFormProps extends GatewayFormProps {
  */
 export const GetnetForm: React.FC<PayzenFormProps> = ({ onSubmit, onSuccess, onError, children, className, paymentSchedule, updateCard = false, cart, customer, formId, order }) => {
   const PayZenKR = useRef<KryptonClient>(null);
-  const [loadingClass, setLoadingClass] = useState<'hidden' | 'loader' | 'loader-overlay'>('loader');
+  const [loadingClass, setLoadingClass] = useState<'hidden' | 'loader' | 'loader-overlay'>('hidden');
 
   useEffect(() => {
     SettingAPI.query(['payzen_endpoint', 'payzen_public_key']).then(settings => {
@@ -42,8 +43,7 @@ export const GetnetForm: React.FC<PayzenFormProps> = ({ onSubmit, onSuccess, onE
           .then(({ KR, result }) => KR.showForm(result.formId))
           .then(({ KR }) => KR.onFormReady(handleFormReady))
           .then(({ KR }) => KR.onFormCreated(handleFormCreated))
-          .then(({ KR }) => { PayZenKR.current = KR; })
-          .catch(error => onError(error));
+          .then(({ KR }) => { PayZenKR.current = KR; });
       }).catch(error => onError(error));
     });
   }, [cart, paymentSchedule, customer, order]);
@@ -93,7 +93,7 @@ export const GetnetForm: React.FC<PayzenFormProps> = ({ onSubmit, onSuccess, onE
   /**
    * Confirm the payment, depending on the current type of payment (single shot or recurring)
    */
-  const confirmPayment = async (event: ProcessPaymentAnswer, transaction: PaymentTransaction): Promise<Invoice|PaymentSchedule|Order> => {
+  const confirmPayment = async (event: ProcessPaymentAnswer, transaction: PaymentTransaction): Promise<Invoice | PaymentSchedule | Order> => {
     if (paymentSchedule) {
       return await PayzenAPI.confirmPaymentSchedule(event.clientAnswer.orderDetails.orderId, transaction.uuid, cart);
     } else if (order) {
@@ -167,8 +167,38 @@ export const GetnetForm: React.FC<PayzenFormProps> = ({ onSubmit, onSuccess, onE
   return (
     <form onSubmit={handleSubmit} id={formId} className={`getnet-form ${className || ''}`}>
       <Loader />
-      <div className="payzen-container">
-        <div id="payzenPaymentForm" />
+      <div className="getnet-container">
+        <div className="getnet-card-input">
+          <label htmlFor="getnet_card">Número do cartão</label>
+          <FabInput id="getnet_card"
+            icon={<i className="fa fa-credit-card" />}
+            type="text"
+            required />
+        </div>
+        <div className="getnet-card-name-input">
+          <label htmlFor="getnet_card_name">Nome do cartão</label>
+          <FabInput id="getnet_card_name"
+            icon={<i className="fa fa-user" />}
+            type="text"
+            required />
+        </div>
+        <div className='getnet-line-cvv-expiration'>
+          <div className="getnet-card-expiration-input">
+            <label htmlFor="getnet_card_expiration">Data de validade</label>
+            <FabInput id="getnet_card_expiration"
+              icon={<i className="fa fa-calendar" />}
+              type="text"
+              placeholder='DD/MM'
+              required />
+          </div>
+          <div className="getnet-card-cvv-input">
+            <label htmlFor="getnet_card_cvv">CVV</label>
+            <FabInput id="getnet_card_cvv"
+              icon={<i className="fa fa-key" />}
+              type="text"
+              required />
+          </div>
+        </div>
       </div>
       {children}
     </form>

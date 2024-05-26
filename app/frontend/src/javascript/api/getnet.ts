@@ -17,6 +17,11 @@ export default class GetnetAPI {
     return res?.data;
   }
 
+  static async createPayment (cart: ShoppingCart, customer: User): Promise<CreatePaymentResponse> {
+    const res: AxiosResponse<CreatePaymentResponse> = await apiClient.post('/api/getnet/create_payment', { cart_items: cart, customer_id: customer.id });
+    return res?.data;
+  }
+
   static async chargeCreatePayment (cart: ShoppingCart, customer: User): Promise<CreatePaymentResponse> {
     const res: AxiosResponse<CreatePaymentResponse> = await apiClient.post('/api/payzen/create_payment', { cart_items: cart, customer_id: customer.id });
     return res?.data;
