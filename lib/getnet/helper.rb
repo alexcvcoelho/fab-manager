@@ -19,6 +19,13 @@ class Getnet::Helper < Payment::Helper
       res
     end
 
+    def card_token(card_number, customer_id)
+      {
+        card_number: card_number.gsub(" ", ""),
+        customer_id: customer_id.to_s
+      }
+    end
+
     def human_error(error)
       I18n.t('errors.messages.gateway_error', **{ MESSAGE: error.message })
     end

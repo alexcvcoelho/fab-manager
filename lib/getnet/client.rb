@@ -33,6 +33,26 @@ class Getnet::Client
     token(json)
   end
 
+  def post(rel_url, payload)
+    require 'uri'
+    require 'net/http'
+    require 'json'
+
+    uri = URI(File.join(base_url, rel_url))
+    headers = {
+      'Authorization' => auth,
+      'Content-Type' => 'application/json'
+    }
+
+    res = Net::HTTP.post(uri, payload.to_json, headers)
+
+    json = JSON.parse(res.body)
+    puts json
+    raise ::GetnetError, json['answer'] if json['status'] == 'ERROR'
+
+    json
+  end
+
   def base_url
     @base_url || Setting.get('getnet_endpoint')
   end

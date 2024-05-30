@@ -7,3 +7,9 @@
   display: flex;
   gap: 1rem;
 }
+
+.getnet-card-name-input {
+  input[name='name'] {
+    text-transform: uppercase;
+  }
+}
