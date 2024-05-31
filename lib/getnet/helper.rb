@@ -26,6 +26,27 @@ class Getnet::Helper < Payment::Helper
       }
     end
 
+    def generate_customer(customer_id, order)
+      {
+        customer_id: customer_id.to_s,
+        customer_name: "#{order.statistic_profile.user.first_name} #{order.statistic_profile.user.last_name}",
+        customer_email: order.statistic_profile.user.email,
+        customer_document_type: 'CPF',
+        customer_document_number: order.statistic_profile.user.cpf,
+        customer_phone_number: order.statistic_profile.user.phone_number,
+        billing_address: {
+          street: order.statistic_profile.user.address,
+          number: order.statistic_profile.user.address_number,
+          complement: order.statistic_profile.user.address_complement,
+          district: order.statistic_profile.user.address_district,
+          city: order.statistic_profile.user.address_city,
+          state: order.statistic_profile.user.address_state,
+          country: order.statistic_profile.user.address_country,
+          postal_code: order.statistic_profile.user.address_postal_code
+        }
+      }
+    end
+
     def human_error(error)
       I18n.t('errors.messages.gateway_error', **{ MESSAGE: error.message })
     end

@@ -3,12 +3,18 @@ export interface SdkTestResponse {
 }
 
 export interface CreateTokenResponse {
-  formToken: string
-  orderId: string
+  token: string
 }
 
 export type CreatePaymentResponse = CreateTokenResponse
 
+export interface Card {
+  token: string,
+  number: string,
+  name: string,
+  expiration: string,
+  cvv: string,
+}
 export interface CheckHashResponse {
   validity: boolean
 }

@@ -17,17 +17,11 @@ import { FormInput } from '../../form/form-input';
 import Inputmask from 'inputmask';
 import ValidationLib from '../../../lib/validation';
 import GetnetAPI from '../../../api/getnet';
+import { Card } from '../../../models/getnet';
 
 // we use these two additional parameters to update the card, if provided
 interface GetnetFormProps extends GatewayFormProps {
   updateCard?: boolean,
-}
-
-interface Card {
-  number: string,
-  name: string,
-  expiration: string,
-  cvv: string,
 }
 
 /**
@@ -50,7 +44,8 @@ export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onE
   const submitForm = async (card: Card): Promise<void> => {
     onSubmit();
     try {
-      const token = await GetnetAPI.tokenCard(card.number, customer.id);
+      const token = await crateCardToken(card);
+      const payment = await GetnetAPI.createPayment(cardData(card, token), cart, customer);
       onSuccess({} as Order);
     } catch (err) {
       // catch api errors
@@ -58,6 +53,34 @@ export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onE
     } finally {
       setLoadingClass('hidden');
     }
+  };
+
+  /**
+   * Make a request for tokenize card number
+   * @param card
+   * @returns
+   */
+  const crateCardToken = async (card: Card): Promise<string> => {
+    const res = await GetnetAPI.tokenCard(card.number, customer);
+    if (!res.token) {
+      throw new Error(' Número de cartão inválido');
+    }
+    return res.token;
+  };
+
+  /**
+   * Create a card object for payment
+   * @param card
+   * @param token
+   * @returns
+   */
+  const cardData = (card: Card, token: string): Card => {
+    return {
+      token,
+      name: card.name,
+      expiration: card.expiration,
+      cvv: card.cvv
+    } as Card;
   };
 
   /**

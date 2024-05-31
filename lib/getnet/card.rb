@@ -9,4 +9,21 @@ class Getnet::Card < Getnet::Client
   def create_token(payload)
     post('/v1/tokens/card', payload)
   end
+
+  def create_payment(amount: 0,
+                     currency: 'BRL',
+                     order: nil,
+                     customer: nil,
+                     device: nil,
+                     credit: nil
+                     order_id: nil)
+    post('/v1/payments/credit',
+         amount: amount,
+         currency: currency,
+         order: order,
+         customer: customer,
+         device: device,
+         credit: credit,
+         transaction_id: order_id)
+  end
 end

@@ -22,8 +22,12 @@ class API::GetnetController < API::PaymentsController
     client = Getnet::Card.new()
     res = client.create_token(payload)
 
-    @token = res
+    @token = res['number_token']
   rescue SocketError
     @status = false
+  end
+
+  def create_payment
+    puts params
   end
 end
