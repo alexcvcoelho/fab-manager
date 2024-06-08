@@ -36,13 +36,9 @@ class API::GetnetController < API::PaymentsController
     @result = client.create_payment(seller_id: Setting.get('getnet_seller_id'),
                                     amount: amount,
                                     order: Getnet::Helper.generate_order(@id),
-                                    customer: Getnet::Helper.generate_customer(params[:customer_id], current_user.id, order),
+                                    customer: Getnet::Helper.generate_customer(params[:customer_id], current_user.id, cart),
                                     device: Getnet::Helper.generate_device(request),
                                     credit: Getnet::Helper.generate_credit(order.statistic_profile.user.id, order))
-    
-    client.create_payment(amount: PayZen::Service.new.payzen_amount(amount[:amount]),
-                                    order_id: @id,
-                                    customer: PayZen::Helper.generate_customer(params[:customer_id], current_user.id, params[:cart_items]))
   rescue GetnetError => e
     render json: e, status: :unprocessable_entity
   end

@@ -82,7 +82,7 @@ class Getnet::Helper < Payment::Helper
         save_card_data: false,
         transaction_type: 'FULL',
         number_installments: 1,
-        soft_descriptor: 'Fablab Casa Firjan'
+        soft_descriptor: 'Fablab Casa Firjan',
         card: {
           number_token: card_token,
           cardholder_name: 'FABLAB CASA FIRJAN',

@@ -43,10 +43,13 @@ class Getnet::Client
       'Authorization' => auth,
       'Content-Type' => 'application/json'
     }
+    puts 'PAYLOAD'
+    puts payload
 
     res = Net::HTTP.post(uri, payload.to_json, headers)
 
     json = JSON.parse(res.body)
+    puts 'RESPONSE'
     puts json
     raise ::GetnetError, json['answer'] if json['status'] == 'ERROR'
 

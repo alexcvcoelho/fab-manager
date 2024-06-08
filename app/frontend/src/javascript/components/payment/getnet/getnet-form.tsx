@@ -46,6 +46,7 @@ export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onE
     try {
       const token = await crateCardToken(card);
       const payment = await GetnetAPI.createPayment(cardData(card, token), cart, customer);
+      console.log(payment);
       onSuccess({} as Order);
     } catch (err) {
       // catch api errors
