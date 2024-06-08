@@ -19,6 +19,10 @@ class Getnet::Helper < Payment::Helper
       res
     end
 
+    def human_error(error)
+      I18n.t('errors.messages.gateway_error', **{ MESSAGE: error.message })
+    end
+
     def card_token(card_number, customer_id)
       {
         card_number: card_number.gsub(" ", ""),
@@ -26,23 +30,65 @@ class Getnet::Helper < Payment::Helper
       }
     end
 
-    def generate_customer(customer_id, order)
+    def generate_customer(customer_id, operator_id, order)
+      customer = User.find(customer_id)
+      operator = User.find(operator_id)
+
+      address = if customer.organization?
+                  customer.invoicing_profile.organization.address&.address
+                else
+                  customer.invoicing_profile.address&.address
+                end
       {
         customer_id: customer_id.to_s,
-        customer_name: "#{order.statistic_profile.user.first_name} #{order.statistic_profile.user.last_name}",
-        customer_email: order.statistic_profile.user.email,
-        customer_document_type: 'CPF',
-        customer_document_number: order.statistic_profile.user.cpf,
-        customer_phone_number: order.statistic_profile.user.phone_number,
+        first_name: order.statistic_profile.user.first_name,
+        last_name: order.statistic_profile.user.last_name,
+        email: order.statistic_profile.user.email,
+        document_type: customer.organization? ? 'CNPJ' : 'CPF',
+        document_number: order.statistic_profile.user.cpf,
+        phone_number: order.statistic_profile.user.phone_number,
         billing_address: {
-          street: order.statistic_profile.user.address,
-          number: order.statistic_profile.user.address_number,
-          complement: order.statistic_profile.user.address_complement,
-          district: order.statistic_profile.user.address_district,
-          city: order.statistic_profile.user.address_city,
-          state: order.statistic_profile.user.address_state,
-          country: order.statistic_profile.user.address_country,
-          postal_code: order.statistic_profile.user.address_postal_code
+          street: address.address,
+          number: address.number,
+          complement: address.complement,
+          district: address.locality,
+          city: address.city,
+          state: address.state,
+          country: address.country,
+          postal_code: address.postal_code
+        }
+      }
+    end
+
+    def generate_order(order_id)
+      {
+        order_id: order_id.to_s,
+        sales_tax: 0,
+        product_type: 'service',
+      }
+    end
+
+    def generate_device(request)
+      {
+        ip_address: request.remote_ip,
+        device_id: request.user_agent
+      }
+    end
+
+    def generate_credit(card_token)
+      {
+        delayed: false,
+        pre_authorization: false,
+        save_card_data: false,
+        transaction_type: 'FULL',
+        number_installments: 1,
+        soft_descriptor: 'Fablab Casa Firjan'
+        card: {
+          number_token: card_token,
+          cardholder_name: 'FABLAB CASA FIRJAN',
+          security_code: '123',
+          expiration_month: '12',
+          expiration_year: '25'
         }
       }
     end

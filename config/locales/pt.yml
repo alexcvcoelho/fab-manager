@@ -44,7 +44,7 @@ pt:
       must_be_in_the_past: "O período deve ser estritamente anterior à data de hoje."
       registration_disabled: "Registo está desabilitado"
       undefined_in_store: "deve ser definido para tornar o produto disponível na loja"
-      gateway_error: "Erro do gateway de pagamento: %{MESSAGE}"
+      gateway_error: "Erro ao realizar o pagamento: %{MESSAGE}"
       gateway_amount_too_small: "Payments under %{AMOUNT} are not supported. Please order directly at the reception."
       gateway_amount_too_large: "Payments above %{AMOUNT} are not supported. Please order directly at the reception."
       product_in_use: "Este produto já foi comprado"

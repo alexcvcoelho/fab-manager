@@ -4,8 +4,6 @@
 class Payments::GetnetService
   require 'getnet/helper'
   require 'getnet/card'
-  require 'pay_zen/charge'
-  require 'pay_zen/service'
   include Payments::PaymentConcern
 
   def payment(order, coupon_code)
@@ -16,9 +14,12 @@ class Payments::GetnetService
     id = Getnet::Helper.generate_ref(order, order.statistic_profile.user.id)
 
     client = Getnet::Card.new
-    result = client.create_payment(amount: amount,
-                                   order_id: id,
-                                   customer: Getnet::Helper.generate_customer(order.statistic_profile.user.id, order))
+    result = client.create_payment(seller_id: Setting.get('getnet_seller_id'),
+                                   amount: amount,
+                                   order: Getnet::Helper.generate_order(id),
+                                   customer: Getnet::Helper.generate_customer(order.statistic_profile.user.id, order),
+                                   device: Getnet::Helper.generate_device(order.statistic_profile.user.id, order),
+                                   credit: Getnet::Helper.generate_credit(order.statistic_profile.user.id, order))
     { order: order, payment: result }
   end
 
