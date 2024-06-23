@@ -44,7 +44,7 @@ class Getnet::Client
       'Content-Type' => 'application/json'
     }
     puts 'PAYLOAD'
-    puts payload
+    puts payload.to_json
 
     res = Net::HTTP.post(uri, payload.to_json, headers)
 

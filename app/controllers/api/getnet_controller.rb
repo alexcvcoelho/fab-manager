@@ -31,14 +31,15 @@ class API::GetnetController < API::PaymentsController
     cart = shopping_cart
     amount = debit_amount(cart)
     @id = Getnet::Helper.generate_ref(params[:cart_items], params[:customer_id])
+    @card = params[:card]
 
     client = Getnet::Card.new
     @result = client.create_payment(seller_id: Setting.get('getnet_seller_id'),
-                                    amount: amount,
+                                    amount: amount[:amount],
                                     order: Getnet::Helper.generate_order(@id),
-                                    customer: Getnet::Helper.generate_customer(params[:customer_id], current_user.id, cart),
+                                    customer: Getnet::Helper.generate_customer(params[:customer_id]),
                                     device: Getnet::Helper.generate_device(request),
-                                    credit: Getnet::Helper.generate_credit(order.statistic_profile.user.id, order))
+                                    credit: Getnet::Helper.generate_credit(@card))
   rescue GetnetError => e
     render json: e, status: :unprocessable_entity
   end

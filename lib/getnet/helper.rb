@@ -30,32 +30,26 @@ class Getnet::Helper < Payment::Helper
       }
     end
 
-    def generate_customer(customer_id, operator_id, order)
+    def generate_customer(customer_id)
       customer = User.find(customer_id)
-      operator = User.find(operator_id)
 
-      address = if customer.organization?
-                  customer.invoicing_profile.organization.address&.address
-                else
-                  customer.invoicing_profile.address&.address
-                end
       {
         customer_id: customer_id.to_s,
-        first_name: order.statistic_profile.user.first_name,
-        last_name: order.statistic_profile.user.last_name,
-        email: order.statistic_profile.user.email,
+        first_name: customer.statistic_profile.user.first_name,
+        last_name: customer.statistic_profile.user.last_name,
+        email: customer.statistic_profile.user.email,
         document_type: customer.organization? ? 'CNPJ' : 'CPF',
-        document_number: order.statistic_profile.user.cpf,
-        phone_number: order.statistic_profile.user.phone_number,
+        document_number: customer.profile.cpf,
+        phone_number: customer.profile.phone,
         billing_address: {
-          street: address.address,
-          number: address.number,
-          complement: address.complement,
-          district: address.locality,
-          city: address.city,
-          state: address.state,
-          country: address.country,
-          postal_code: address.postal_code
+          street: customer.profile.street,
+          number: customer.profile.number,
+          complement: customer.profile.complement,
+          district: customer.profile.neighborhood,
+          city: customer.profile.city,
+          state: customer.profile.state,
+          country: 'Brasil',
+          postal_code: customer.profile.zipcode
         }
       }
     end
@@ -75,7 +69,7 @@ class Getnet::Helper < Payment::Helper
       }
     end
 
-    def generate_credit(card_token)
+    def generate_credit(card)
       {
         delayed: false,
         pre_authorization: false,
@@ -84,17 +78,13 @@ class Getnet::Helper < Payment::Helper
         number_installments: 1,
         soft_descriptor: 'Fablab Casa Firjan',
         card: {
-          number_token: card_token,
-          cardholder_name: 'FABLAB CASA FIRJAN',
-          security_code: '123',
-          expiration_month: '12',
-          expiration_year: '25'
+          number_token: card['token'],
+          cardholder_name: card['name'],
+          security_code: card['cvv'],
+          expiration_month: card['expiration'].split('/')[0],
+          expiration_year: card['expiration'].split('/')[1]
         }
       }
-    end
-
-    def human_error(error)
-      I18n.t('errors.messages.gateway_error', **{ MESSAGE: error.message })
     end
 
     ## generate an unique string reference for the content of a cart
