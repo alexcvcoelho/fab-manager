@@ -28,7 +28,7 @@ class API::CheckoutController < API::APIController
   rescue PagseguroError => e
     render json: PagSeguro::Helper.human_error(e), status: :unprocessable_entity
   rescue GetnetError => e
-    render json: Getnet::Helper.human_error(e), status: :unprocessable_entity
+    render json: GetNet::Helper.human_error(e), status: :unprocessable_entity
   rescue StandardError => e
     Rails.logger.error e
     Rails.logger.debug e.backtrace

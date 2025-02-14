@@ -5,6 +5,7 @@ class Checkout::PaymentService
   require 'pay_zen/helper'
   require 'stripe/helper'
   require 'pagseguro/helper'
+  require 'getnet/helper'
   include Payments::PaymentConcern
 
   def payment(order, operator, coupon_code, payment_id = '')
@@ -27,7 +28,7 @@ class Checkout::PaymentService
       Payments::PayzenService.new.payment(order, coupon_code)
     elsif PagSeguro::Helper.enabled?
       Payments::PagseguroService.new.payment(order,coupon_code)
-    elsif Payments::GetnetService.enabled?
+    elsif GetNet::Helper.enabled?
       Payments::GetnetService.new.payment(order, coupon_code)
     else
       raise PaymentGatewayError, 'Bad gateway or online payment is disabled'
@@ -43,6 +44,8 @@ class Checkout::PaymentService
       Payments::PayzenService.new.confirm_payment(order, coupon_code, payment_id)
     elsif PagSeguro::Helper.enabled?
       Payments::PagseguroService.new.confirm_payment(order, coupon_code, payment_id)
+    elsif GetNet::Helper.enabled?
+      Payments::GetnetService.new.confirm_payment(order, coupon_code, payment_id)
     else
       raise PaymentGatewayError, 'Bad gateway or online payment is disabled'
     end

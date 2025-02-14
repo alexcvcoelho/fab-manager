@@ -3,13 +3,14 @@
 require 'payment/helper'
 
 # PayZen payement gateway
-module Getnet; end
+module GetNet; end
 
 ## Provides various methods around the Getnet payment gateway
-class Getnet::Helper < Payment::Helper
+class GetNet::Helper < Payment::Helper
   class << self
     ## Is the Getnet gateway enabled?
     def enabled?
+      return true
       return false unless Setting.get('online_payment_module')
       return false unless Setting.get('payment_gateway') == 'getnet'
       res = true

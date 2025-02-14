@@ -11,28 +11,20 @@ class Payments::GetnetService
 
     raise Cart::ZeroPriceError if amount.zero?
 
-    id = Getnet::Helper.generate_ref(order, order.statistic_profile.user.id)
+    id = GetNet::Helper.generate_ref(order, order.statistic_profile.user.id)
 
     client = Getnet::Card.new
     result = client.create_payment(seller_id: Setting.get('getnet_seller_id'),
                                    amount: amount,
-                                   order: Getnet::Helper.generate_order(id),
-                                   customer: Getnet::Helper.generate_customer(order.statistic_profile.user.id, order),
-                                   device: Getnet::Helper.generate_device(order.statistic_profile.user.id, order),
-                                   credit: Getnet::Helper.generate_credit(order.statistic_profile.user.id, order))
+                                   order: GetNet::Helper.generate_order(id),
+                                   customer: GetNet::Helper.generate_customer(order.statistic_profile.user.id),
+                                   device: GetNet::Helper.generate_device(request),
+                                   credit: GetNet::Helper.generate_credit(order.statistic_profile.user.id, order))
     { order: order, payment: result }
   end
 
   def confirm_payment(order, coupon_code, payment_id)
-    client = PayZen::Order.new
-    payzen_order = client.get(payment_id, operation_type: 'DEBIT')
-
-    if payzen_order['answer']['transactions'].any? { |transaction| transaction['status'] == 'PAID' }
-      o = payment_success(order, coupon_code, 'card', payment_id, 'PayZen::Order')
-      { order: o }
-    else
-      order.update(state: 'payment_failed')
-      { order: order, payment: { error: { statusText: payzen_order['answer'] } } }
-    end
+    o = payment_success(order, coupon_code, 'card', payment_id, 'GetNet::Order')
+    { order: o }
   end
 end

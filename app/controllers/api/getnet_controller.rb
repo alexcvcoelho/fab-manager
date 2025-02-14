@@ -18,7 +18,7 @@ class API::GetnetController < API::PaymentsController
   end
 
   def token_card
-    payload = Getnet::Helper.card_token(params[:card_number], params[:customer_id])
+    payload = GetNet::Helper.card_token(params[:card_number], params[:customer_id])
     client = Getnet::Card.new()
     res = client.create_token(payload)
 
@@ -42,5 +42,19 @@ class API::GetnetController < API::PaymentsController
                                     credit: Getnet::Helper.generate_credit(@card))
   rescue GetnetError => e
     render json: e, status: :unprocessable_entity
+  end
+
+  def confirm_payment
+    #render(json: { error: 'Bad gateway or online payment is disabled' }, status: :bad_gateway) and return unless Getnet::Helper.enabled?
+    cart = shopping_cart
+    render on_payment_success(params[:order_id], cart)
+  rescue StandardError => e
+    render json: e, status: :unprocessable_entity
+  end
+
+  private
+
+  def on_payment_success(order_id, cart)
+    super(order_id, 'GetNet::Order', cart)
   end
 end

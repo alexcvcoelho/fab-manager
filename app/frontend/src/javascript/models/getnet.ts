@@ -7,10 +7,29 @@ export interface CreateTokenResponse {
 }
 
 export interface CreatePaymentResponse {
+  orderId: string,
   result: {
-    orderId: string,
-    status: 'APPROVED' | 'DECLINED'
-  }
+    seller_id: string;
+    amount: number;
+    currency: string;
+    order_id: string;
+    status: 'CANCELED' | 'APPROVED' | 'DENIED' | 'AUTHORIZED' | 'CONFIRMED';
+    payment_id: string;
+    received_at: string;
+    credit: {
+      authorization_code: string;
+      reason_code: string;
+      reason_message: string;
+      acquirer: string;
+      soft_descriptor: string;
+      brand: string;
+      terminal_nsu: string;
+      acquirer_transaction_id: string;
+      transaction_id: string;
+      delayed: boolean;
+      authorized_at: string;
+    };
+  };
 }
 
 export interface Card {

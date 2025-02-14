@@ -260,6 +260,7 @@ Rails.application.routes.draw do
     post 'getnet/sdk_test' => 'getnet#sdk_test'
     post 'getnet/token_card' => 'getnet#token_card'
     post 'getnet/create_payment' => 'getnet#create_payment'
+    post 'getnet/confirm_payment' => 'getnet#confirm_payment'
 
     ## Pagseguro gateway
     post 'pagseguro/test_token' => 'pagseguro#test_token'

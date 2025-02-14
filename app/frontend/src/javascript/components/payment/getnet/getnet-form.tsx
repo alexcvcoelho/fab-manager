@@ -6,11 +6,13 @@ import { FormInput } from '../../form/form-input';
 import Inputmask from 'inputmask';
 import ValidationLib from '../../../lib/validation';
 import GetnetAPI from '../../../api/getnet';
-import { Card, CreatePaymentResponse, PaymentTransaction, ProcessPaymentAnswer } from '../../../models/getnet';
+import { Card, CreatePaymentResponse } from '../../../models/getnet';
 import CheckoutAPI from '../../../api/checkout';
 import { Invoice } from '../../../models/invoice';
 import { Order } from '../../../models/order';
 import { PaymentSchedule } from '../../../models/payment-schedule';
+import { ShoppingCart } from '../../../models/payment';
+import { User } from '../../../models/user';
 
 // we use these two additional parameters to update the card, if provided
 interface GetnetFormProps extends GatewayFormProps {
@@ -21,7 +23,7 @@ interface GetnetFormProps extends GatewayFormProps {
  * A form component to collect the credit card details and to create the payment method on Stripe.
  * The form validation button must be created elsewhere, using the attribute form={formId}.
  */
-export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onError, children, className, paymentSchedule, updateCard = false, cart, customer, formId, order }) => {
+export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onError, children, updateCard = false, className, paymentSchedule, cart, customer, formId, order }) => {
   const [loadingClass, setLoadingClass] = useState<'hidden' | 'loader' | 'loader-overlay'>('hidden');
   const { register, formState, handleSubmit } = useForm<Card>();
 
@@ -38,14 +40,15 @@ export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onE
     onSubmit();
     try {
       const token = await crateCardToken(card);
-      const payment = await GetnetAPI.createPayment(cardData(card, token), cart, customer);
-      if (payment.result.status === 'APPROVED') {
-        confirmPayment(payment).then((confirmation) => {
+      createPayment(cardData(card, token), cart, customer).then((payment) => {
+        if (payment.result.status === 'APPROVED') {
+          confirmPayment(payment).then((confirmation) => {
             onSuccess(confirmation);
-        }).catch(e => onError(e));
-      } else {
-        throw Error('Erro ao realizar pagamento.');
-      }
+          }).catch(e => onError(e));
+        } else {
+          throw Error('Erro ao realizar pagamento.');
+        }
+      }).catch(e => onError(e));
     } catch (err) {
       // catch api errors
       onError(err);
@@ -83,16 +86,33 @@ export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onE
   };
 
   /**
+   * Ask the API to create the form token.
+   * Depending on the current transaction (schedule or not), a PayZen Token or Payment may be created.
+   */
+  const createPayment = async (card: Card, cart: ShoppingCart, customer: User): Promise<CreatePaymentResponse> => {
+    if (updateCard) {
+      throw new Error('Atualização de cartão não implementada');
+    } else if (paymentSchedule) {
+      throw new Error('Pagamento recorrente não implementado');
+    } else if (order) {
+      const res = await CheckoutAPI.payment(order);
+      return res.payment as CreatePaymentResponse;
+    } else {
+      return await GetnetAPI.createPayment(card, cart, customer);
+    }
+  };
+
+  /**
    * Confirm the payment, depending on the current type of payment (single shot or recurring)
    */
-  const confirmPayment = async (payment: CreatePaymentResponse): Promise<Invoice|PaymentSchedule|Order> => {
+  const confirmPayment = async (payment: CreatePaymentResponse): Promise<Invoice | PaymentSchedule | Order> => {
     if (paymentSchedule) {
       throw new Error('Pagamento recorrente não implementado');
     } else if (order) {
-      const res = await CheckoutAPI.confirmPayment(order, payment.result.orderId);
+      const res = await CheckoutAPI.confirmPayment(order, payment.orderId);
       return res.order;
     } else {
-      return await GetnetAPI.confirm(payment.result.orderId, cart);
+      return await GetnetAPI.confirm(payment.orderId, cart);
     }
   };
 
