@@ -11,20 +11,20 @@ default: &default
 
 development:
   <<: *default
-  database: fablab_development
+  database: <%= ENV["POSTGRES_DATABASE"] %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rails".
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: fablab_test
+  database: <%= ENV["POSTGRES_DATABASE"] %>
 
 staging:
   <<: *default
-  database: fablab_staging
+  database: <%= ENV["POSTGRES_DATABASE"] %>
 
 
 production:
   <<: *default
-  database: fablab_production
+  database: <%= ENV["POSTGRES_DATABASE"] %>

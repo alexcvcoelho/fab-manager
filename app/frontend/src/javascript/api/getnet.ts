@@ -8,6 +8,7 @@ import {
   SdkTestResponse,
   Card
 } from '../models/getnet';
+import { Invoice } from '../models/invoice';
 
 export default class GetnetAPI {
   static async sdkTest (endpoint: string, sellerId: string, clientId: string, clientSecret: string): Promise<SdkTestResponse> {
@@ -22,6 +23,11 @@ export default class GetnetAPI {
 
   static async createPayment (card: Card, cart: ShoppingCart, customer: User): Promise<CreatePaymentResponse> {
     const res: AxiosResponse<CreatePaymentResponse> = await apiClient.post('/api/getnet/create_payment', { cart_items: cart, customer_id: customer.id, card: card });
+    return res?.data;
+  }
+
+  static async confirm (orderId: string, cart: ShoppingCart): Promise<Invoice> {
+    const res: AxiosResponse<Invoice> = await apiClient.post('/api/getnet/confirm_payment', { cart_items: cart, order_id: orderId });
     return res?.data;
   }
 }

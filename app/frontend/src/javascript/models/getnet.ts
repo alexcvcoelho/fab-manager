@@ -6,7 +6,12 @@ export interface CreateTokenResponse {
   token: string
 }
 
-export type CreatePaymentResponse = CreateTokenResponse
+export interface CreatePaymentResponse {
+  result: {
+    orderId: string,
+    status: 'APPROVED' | 'DECLINED'
+  }
+}
 
 export interface Card {
   token: string,

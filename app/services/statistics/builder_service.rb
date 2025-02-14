@@ -5,7 +5,7 @@ class Statistics::BuilderService
   class << self
     def generate_statistic(options = default_options)
       # remove data exists
-      Statistics::CleanerService.clean_stat(options)
+      #Statistics::CleanerService.clean_stat(options)
 
       Statistics::Builders::SubscriptionsBuilderService.build(options)
       Statistics::Builders::ReservationsBuilderService.build(options)

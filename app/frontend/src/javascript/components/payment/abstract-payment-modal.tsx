@@ -171,6 +171,7 @@ export const AbstractPaymentModal: React.FC<AbstractPaymentModalProps> = ({ isOp
    * After sending the form with success, process the resulting payment method
    */
   const handleFormSuccess = async (result: Invoice|PaymentSchedule|Order): Promise<void> => {
+    console.log('result', result);
     setSubmitState(false);
     GTM.trackPurchase(result.id, result.total);
     afterSuccess(result);

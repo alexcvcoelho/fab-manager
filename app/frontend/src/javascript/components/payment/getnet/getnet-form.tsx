@@ -1,23 +1,16 @@
 import { FunctionComponent, useState, useEffect } from 'react';
 import * as React from 'react';
 import { GatewayFormProps } from '../abstract-payment-modal';
-// import PayzenAPI from '../../../api/payzen';
-// import {
-//   CreateTokenResponse,
-//   KryptonClient,
-//   KryptonError, PaymentTransaction,
-//   ProcessPaymentAnswer
-// } from '../../../models/getnet';
-// import { PaymentSchedule } from '../../../models/payment-schedule';
-// import { Invoice } from '../../../models/invoice';
-// import CheckoutAPI from '../../../api/checkout';
-import { Order } from '../../../models/order';
 import { useForm } from 'react-hook-form';
 import { FormInput } from '../../form/form-input';
 import Inputmask from 'inputmask';
 import ValidationLib from '../../../lib/validation';
 import GetnetAPI from '../../../api/getnet';
-import { Card } from '../../../models/getnet';
+import { Card, CreatePaymentResponse, PaymentTransaction, ProcessPaymentAnswer } from '../../../models/getnet';
+import CheckoutAPI from '../../../api/checkout';
+import { Invoice } from '../../../models/invoice';
+import { Order } from '../../../models/order';
+import { PaymentSchedule } from '../../../models/payment-schedule';
 
 // we use these two additional parameters to update the card, if provided
 interface GetnetFormProps extends GatewayFormProps {
@@ -46,9 +39,10 @@ export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onE
     try {
       const token = await crateCardToken(card);
       const payment = await GetnetAPI.createPayment(cardData(card, token), cart, customer);
-      console.log(payment);
       if (payment.result.status === 'APPROVED') {
-        onSuccess(order);
+        confirmPayment(payment).then((confirmation) => {
+            onSuccess(confirmation);
+        }).catch(e => onError(e));
       } else {
         throw Error('Erro ao realizar pagamento.');
       }
@@ -86,6 +80,20 @@ export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onE
       expiration: card.expiration,
       cvv: card.cvv
     } as Card;
+  };
+
+  /**
+   * Confirm the payment, depending on the current type of payment (single shot or recurring)
+   */
+  const confirmPayment = async (payment: CreatePaymentResponse): Promise<Invoice|PaymentSchedule|Order> => {
+    if (paymentSchedule) {
+      throw new Error('Pagamento recorrente não implementado');
+    } else if (order) {
+      const res = await CheckoutAPI.confirmPayment(order, payment.result.orderId);
+      return res.order;
+    } else {
+      return await GetnetAPI.confirm(payment.result.orderId, cart);
+    }
   };
 
   /**

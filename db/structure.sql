@@ -85,11 +85,11 @@ CREATE FUNCTION public.fill_search_vector_for_project() RETURNS trigger
         select string_agg(description, ' ') as content into step_description from project_steps where project_id = new.id;
 
         new.search_vector :=
-          setweight(to_tsvector('pg_catalog.french', unaccent(coalesce(new.name, ''))), 'A') ||
-          setweight(to_tsvector('pg_catalog.french', unaccent(coalesce(new.tags, ''))), 'B') ||
-          setweight(to_tsvector('pg_catalog.french', unaccent(coalesce(new.description, ''))), 'D') ||
-          setweight(to_tsvector('pg_catalog.french', unaccent(coalesce(step_title.title, ''))), 'C') ||
-          setweight(to_tsvector('pg_catalog.french', unaccent(coalesce(step_description.content, ''))), 'D');
+          setweight(to_tsvector('pg_catalog.portuguese', unaccent(coalesce(new.name, ''))), 'A') ||
+          setweight(to_tsvector('pg_catalog.portuguese', unaccent(coalesce(new.tags, ''))), 'B') ||
+          setweight(to_tsvector('pg_catalog.portuguese', unaccent(coalesce(new.description, ''))), 'D') ||
+          setweight(to_tsvector('pg_catalog.portuguese', unaccent(coalesce(step_title.title, ''))), 'C') ||
+          setweight(to_tsvector('pg_catalog.portuguese', unaccent(coalesce(step_description.content, ''))), 'D');
 
         return new;
       end
@@ -108,6 +108,8 @@ $_$;
 
 
 SET default_tablespace = '';
+
+SET default_table_access_method = heap;
 
 --
 -- Name: abuses; Type: TABLE; Schema: public; Owner: -
@@ -890,6 +892,47 @@ CREATE SEQUENCE public.chained_elements_id_seq
 --
 
 ALTER SEQUENCE public.chained_elements_id_seq OWNED BY public.chained_elements.id;
+
+
+--
+-- Name: checkouts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.checkouts (
+    id integer NOT NULL,
+    reservation_id integer,
+    code character varying,
+    url_redirect character varying,
+    amount integer,
+    status_txt character varying,
+    status_code character varying,
+    expiration_date timestamp without time zone,
+    payed boolean,
+    expired boolean,
+    processed boolean,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    reference character varying
+);
+
+
+--
+-- Name: checkouts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.checkouts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: checkouts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.checkouts_id_seq OWNED BY public.checkouts.id;
 
 
 --
@@ -2096,6 +2139,43 @@ ALTER SEQUENCE public.organizations_id_seq OWNED BY public.organizations.id;
 
 
 --
+-- Name: pagseguro_intents; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pagseguro_intents (
+    id bigint NOT NULL,
+    reference_code character varying,
+    payment_code character varying,
+    shopping_cart text,
+    status character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    transaction_type character varying,
+    payload text,
+    order_id character varying
+);
+
+
+--
+-- Name: pagseguro_intents_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.pagseguro_intents_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: pagseguro_intents_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.pagseguro_intents_id_seq OWNED BY public.pagseguro_intents.id;
+
+
+--
 -- Name: payment_gateway_objects; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2701,8 +2781,28 @@ CREATE TABLE public.profiles (
     lastfm character varying,
     flickr character varying,
     job character varying,
+    cpf character varying,
     tours character varying,
-    note text
+    note text,
+    social_name character varying,
+    origin_state character varying,
+    origin_city character varying,
+    zipcode character varying,
+    street character varying,
+    neighborhood character varying,
+    number integer,
+    complement character varying,
+    city character varying,
+    state character varying,
+    rg character varying,
+    rg_date_emission date,
+    rg_issuing_organization character varying,
+    rg_issuing_state character varying,
+    mother_name character varying,
+    occupational_status character varying,
+    education_level character varying,
+    financial_responsible_name character varying,
+    financial_responsible_cpf character varying
 );
 
 
@@ -4390,6 +4490,13 @@ ALTER TABLE ONLY public.chained_elements ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
+-- Name: checkouts id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.checkouts ALTER COLUMN id SET DEFAULT nextval('public.checkouts_id_seq'::regclass);
+
+
+--
 -- Name: components id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -4625,6 +4732,13 @@ ALTER TABLE ONLY public.orders ALTER COLUMN id SET DEFAULT nextval('public.order
 --
 
 ALTER TABLE ONLY public.organizations ALTER COLUMN id SET DEFAULT nextval('public.organizations_id_seq'::regclass);
+
+
+--
+-- Name: pagseguro_intents id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pagseguro_intents ALTER COLUMN id SET DEFAULT nextval('public.pagseguro_intents_id_seq'::regclass);
 
 
 --
@@ -5239,6 +5353,14 @@ ALTER TABLE ONLY public.chained_elements
 
 
 --
+-- Name: checkouts checkouts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.checkouts
+    ADD CONSTRAINT checkouts_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: components components_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5508,6 +5630,14 @@ ALTER TABLE ONLY public.orders
 
 ALTER TABLE ONLY public.organizations
     ADD CONSTRAINT organizations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: pagseguro_intents pagseguro_intents_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pagseguro_intents
+    ADD CONSTRAINT pagseguro_intents_pkey PRIMARY KEY (id);
 
 
 --
@@ -6241,6 +6371,13 @@ CREATE UNIQUE INDEX index_categories_on_slug ON public.categories USING btree (s
 --
 
 CREATE INDEX index_chained_elements_on_element ON public.chained_elements USING btree (element_type, element_id);
+
+
+--
+-- Name: index_checkouts_on_reservation_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_checkouts_on_reservation_id ON public.checkouts USING btree (reservation_id);
 
 
 --
@@ -7343,20 +7480,6 @@ CREATE INDEX index_wallets_on_invoicing_profile_id ON public.wallets USING btree
 
 
 --
--- Name: profiles_lower_unaccent_first_name_trgm_idx; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX profiles_lower_unaccent_first_name_trgm_idx ON public.profiles USING gin (lower(public.f_unaccent((first_name)::text)) public.gin_trgm_ops);
-
-
---
--- Name: profiles_lower_unaccent_last_name_trgm_idx; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX profiles_lower_unaccent_last_name_trgm_idx ON public.profiles USING gin (lower(public.f_unaccent((last_name)::text)) public.gin_trgm_ops);
-
-
---
 -- Name: projects_search_vector_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -7414,7 +7537,7 @@ CREATE RULE chained_elements_upd_protect AS
 -- Name: projects projects_search_content_trigger; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER projects_search_content_trigger BEFORE INSERT OR UPDATE ON public.projects FOR EACH ROW EXECUTE PROCEDURE public.fill_search_vector_for_project();
+CREATE TRIGGER projects_search_content_trigger BEFORE INSERT OR UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION public.fill_search_vector_for_project();
 
 
 --
@@ -7775,6 +7898,14 @@ ALTER TABLE ONLY public.cart_item_subscriptions
 
 ALTER TABLE ONLY public.prepaid_packs
     ADD CONSTRAINT fk_rails_6ea2aaae74 FOREIGN KEY (group_id) REFERENCES public.groups(id);
+
+
+--
+-- Name: checkouts fk_rails_6ee1a768d0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.checkouts
+    ADD CONSTRAINT fk_rails_6ee1a768d0 FOREIGN KEY (reservation_id) REFERENCES public.reservations(id);
 
 
 --
@@ -8368,7 +8499,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20140605125131'),
 ('20140605142133'),
 ('20140605151442'),
-('20140606133116'),
 ('20140609092700'),
 ('20140609092827'),
 ('20140610153123'),
@@ -8437,14 +8567,12 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20150507075620'),
 ('20150512123546'),
 ('20150520132030'),
-('20150520133409'),
 ('20150526130729'),
 ('20150527153312'),
 ('20150529113555'),
 ('20150601125944'),
 ('20150603104502'),
 ('20150603104658'),
-('20150603133050'),
 ('20150604081757'),
 ('20150604131525'),
 ('20150608142234'),
@@ -8526,7 +8654,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20160905142700'),
 ('20160906094739'),
 ('20160906094847'),
-('20160906145713'),
 ('20160915105234'),
 ('20161123104604'),
 ('20170109085345'),
@@ -8544,6 +8671,8 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20171010143708'),
 ('20171011100640'),
 ('20171011125217'),
+('20180718020919'),
+('20180801014424'),
 ('20181210105917'),
 ('20181217103256'),
 ('20181217103441'),
@@ -8558,6 +8687,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20190227143153'),
 ('20190314095931'),
 ('20190320091148'),
+('20190515022037'),
 ('20190521122429'),
 ('20190521123642'),
 ('20190521124609'),
@@ -8693,6 +8823,11 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20230324095639'),
 ('20230328094807'),
 ('20230328094808'),
-('20230328094809');
+('20230328094809'),
+('20231010005749'),
+('20231028142810'),
+('20231216140444'),
+('20240310182318'),
+('20240310232527');
 
 

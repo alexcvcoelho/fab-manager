@@ -17,12 +17,12 @@ namespace :fablab do
 
     def delete_stats_index
       puts 'DELETE stats'
-      `curl -XDELETE http://#{ENV.fetch('ELASTICSEARCH_HOST')}:9200/stats`
+      `curl -XDELETE #{ENV.fetch('ELASTICSEARCH_CONNECTION')}/stats`
     end
 
     def create_stats_index
       puts 'PUT index stats'
-      `curl -XPUT http://#{ENV.fetch('ELASTICSEARCH_HOST')}:9200/stats -d'
+      `curl -XPUT #{ENV.fetch('ELASTICSEARCH_CONNECTION')}/stats -d'
     {
       "settings" : {
         "index" : {
@@ -36,7 +36,7 @@ namespace :fablab do
     def create_stats_mappings
       %w[account event machine project subscription training user space].each do |stat|
         puts "PUT Mapping stats/#{stat}"
-        `curl -XPUT http://#{ENV.fetch('ELASTICSEARCH_HOST')}:9200/stats/#{stat}/_mapping -d '
+        `curl -XPUT #{ENV.fetch('ELASTICSEARCH_CONNECTION')}/stats/#{stat}/_mapping -d '
       {
          "properties": {
             "type": {
@@ -65,7 +65,7 @@ namespace :fablab do
     end
 
     def add_event_filters
-      `curl -XPUT http://#{ENV.fetch('ELASTICSEARCH_HOST')}:9200/stats/event/_mapping -d '
+      `curl -XPUT #{ENV.fetch('ELASTICSEARCH_CONNECTION')}/stats/event/_mapping -d '
       {
          "properties": {
             "ageRange": {
@@ -81,7 +81,7 @@ namespace :fablab do
     end
 
     def add_machine_filters
-      `curl -XPUT http://#{ENV.fetch('ELASTICSEARCH_HOST')}:9200/stats/machine/_mapping -d '
+      `curl -XPUT #{ENV.fetch('ELASTICSEARCH_CONNECTION')}/stats/machine/_mapping -d '
       {
          "properties": {
             "machineDates": {
@@ -94,7 +94,7 @@ namespace :fablab do
     end
 
     def add_space_filters
-      `curl -XPUT http://#{ENV.fetch('ELASTICSEARCH_HOST')}:9200/stats/space/_mapping -d '
+      `curl -XPUT #{ENV.fetch('ELASTICSEARCH_CONNECTION')}/stats/space/_mapping -d '
       {
          "properties": {
             "spaceDates": {
@@ -108,7 +108,7 @@ namespace :fablab do
 
     desc 'add spaces reservations to statistics'
     task add_spaces: :environment do
-      `curl -XPUT http://#{ENV.fetch('ELASTICSEARCH_HOST')}:9200/stats/space/_mapping -d '
+      `curl -XPUT #{ENV.fetch('ELASTICSEARCH_CONNECTION')}/stats/space/_mapping -d '
       {
          "properties": {
             "type": {
