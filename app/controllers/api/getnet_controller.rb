@@ -30,22 +30,22 @@ class API::GetnetController < API::PaymentsController
   def create_payment
     cart = shopping_cart
     amount = debit_amount(cart)
-    @id = Getnet::Helper.generate_ref(params[:cart_items], params[:customer_id])
+    @id = GetNet::Helper.generate_ref(params[:cart_items], params[:customer_id])
     @card = params[:card]
 
     client = Getnet::Card.new
     @result = client.create_payment(seller_id: Setting.get('getnet_seller_id'),
                                     amount: amount[:amount],
-                                    order: Getnet::Helper.generate_order(@id),
-                                    customer: Getnet::Helper.generate_customer(params[:customer_id]),
-                                    device: Getnet::Helper.generate_device(request),
-                                    credit: Getnet::Helper.generate_credit(@card))
+                                    order: GetNet::Helper.generate_order(@id),
+                                    customer: GetNet::Helper.generate_customer(params[:customer_id]),
+                                    device: GetNet::Helper.generate_device(request),
+                                    credit: GetNet::Helper.generate_credit(@card))
   rescue GetnetError => e
     render json: e, status: :unprocessable_entity
   end
 
   def confirm_payment
-    #render(json: { error: 'Bad gateway or online payment is disabled' }, status: :bad_gateway) and return unless Getnet::Helper.enabled?
+    #render(json: { error: 'Bad gateway or online payment is disabled' }, status: :bad_gateway) and return unless GetNet::Helper.enabled?
     cart = shopping_cart
     render on_payment_success(params[:order_id], cart)
   rescue StandardError => e
