@@ -336,7 +336,7 @@ pt:
         select_a_plan: "Selecione um plano aqui"
         you_ve_just_selected_the_slot: "Você selecionou apenas o slot:"
         datetime_to_time: "{START_DATETIME} até {END_TIME}" #eg: Thursday, September 4, 1986 8:30 PM to 10:00 PM
-        cost_of_TYPE: "Custo de {TYPE, select, Machine{máquina slot} Training{o treinamento} Space{espaço slot} other{o elemento}}"
+        cost_of_TYPE: "Custo de {TYPE, select, Machine{máquina slot} Training{o treinamento} Space{mentoria slot} other{o elemento}}"
         offer_this_slot: "Oferecer este slot"
         confirm_this_slot: "Confirmar este slot"
         remove_this_slot: "Remover este slot"
@@ -555,7 +555,7 @@ pt:
         filter_calendar: "Filtrar calendário"
         trainings: "Habilitações"
         machines: "Máquinas"
-        spaces: "Espaços"
+        spaces: "Mentorias"
         events: "Open Days"
         externals: "Outros calendários"
         show_reserved_uniq: "Mostrar apenas horários com reservas"

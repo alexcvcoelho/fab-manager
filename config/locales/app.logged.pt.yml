@@ -145,7 +145,7 @@ pt:
           edit: "Editar"
         reservations_dashboard:
           machine_section_title: "Reservas de máquinas"
-          space_section_title: "Reservas de espaços"
+          space_section_title: "Reservas de mentorias"
           reservations_panel:
             title: "Minhas reservas"
             upcoming: "Próximas"
@@ -232,8 +232,8 @@ pt:
           year: "{COUNT, plural, one{ano} other{anos}}"
       packs_summary:
         prepaid_hours: "Horas pré-pagas"
-        remaining_HOURS: "Você tem {HOURS} horas pré-pagas restantes para esta {ITEM, select, Machine{máquina} Space{espaço} other{}}."
-        no_hours: "Você não tem horas pré-pagas para {ITEM, select, Machine{esta máquina} Space{este espaço} other{}}."
+        remaining_HOURS: "Você tem {HOURS} horas pré-pagas restantes para esta {ITEM, select, Machine{máquina} Space{mentoria} other{}}."
+        no_hours: "Você não tem horas pré-pagas para {ITEM, select, Machine{esta máquina} Space{este mentoria} other{}}."
         buy_a_new_pack: "Comprar um pacote novo"
         unable_to_use_pack_for_subsription_is_expired: "Você precisa ter uma assinatura válida para usar as suas horas restantes."
       #book a training
@@ -247,7 +247,7 @@ pt:
         i_ve_reserved: "Eu reservei"
       #book a space
       space_reserve:
-        planning_of_space_NAME: "Plano de {NAME} espaço"
+        planning_of_space_NAME: "Plano de {NAME} mentoria"
         i_ve_reserved: "Eu reservei"
         i_shift: "Eu troco"
         i_change: "Eu altero"

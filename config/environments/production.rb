@@ -62,8 +62,17 @@ Rails.application.configure do
   # config.action_mailer.perform_deliveries = true
   # config.action_mailer.raise_delivery_errors = false
   # config.action_mailer.default :charset => "utf-8"
-
-  config.action_mailer.smtp_settings = {
+  puts "SMTP ADDRESS: #{Rails.application.secrets.smtp_address}"
+  puts "SMTP PORT: #{Rails.application.secrets.smtp_port}"
+  puts "SMTP USER NAME: #{Rails.application.secrets.smtp_user_name}"
+  puts "SMTP PASSWORD: #{Rails.application.secrets.smtp_password}"
+  puts "SMTP AUTHENTICATION: #{Rails.application.secrets.smtp_authentication}"
+  puts "SMTP ENABLE STARTTLS AUTO: #{Rails.application.secrets.smtp_enable_starttls_auto}"
+  puts "SMTP OPENSSL VERIFY MODE: #{Rails.application.secrets.smtp_openssl_verify_mode}"
+  puts "SMTP TLS: #{Rails.application.secrets.smtp_tls}"
+  puts "SMTP_DOMAIN: #{Rails.application.secrets.smtp_domain}"
+  
+  config.action_mailer.smtp_settings = {  
     address: Rails.application.secrets.smtp_address,
     port: Rails.application.secrets.smtp_port,
     user_name: Rails.application.secrets.smtp_user_name,
@@ -71,6 +80,7 @@ Rails.application.configure do
     authentication: Rails.application.secrets.smtp_authentication,
     enable_starttls_auto: Rails.application.secrets.smtp_enable_starttls_auto,
     openssl_verify_mode: Rails.application.secrets.smtp_openssl_verify_mode,
+    domain: Rails.application.secrets.smtp_domain,
     tls: Rails.application.secrets.smtp_tls,
     ca_file: Rails.application.secrets.smtp_ca_file,
     ca_path: Rails.application.secrets.smtp_ca_path

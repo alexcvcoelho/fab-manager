@@ -5,8 +5,8 @@ namespace :fablab do
     task email_test: :environment do
       begin
         notif = Notification.find_by(notification_type_id: NotificationType.find_by(name: 'notify_user_auth_migration'))
-        notif.receiver.email = "alex.coelho@bluecore.com.br"
-        NotificationsMailer.send_mail_by(notif)
+        notif.receiver.email = "dokosel805@prorsd.com"
+        NotificationsMailer.send_mail_by(notif).deliver_now
         puts "Enviado com sucesso"
       rescue => e
         # Registra erros no console

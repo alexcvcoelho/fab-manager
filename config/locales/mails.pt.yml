@@ -247,7 +247,7 @@ pt:
         statistics_project: "das estatísticas de projetos"
         statistics_subscription: "das estatísticas de assinaturas"
         statistics_training: "das estatísticas de treinamento"
-        statistics_space: "as estatísticas sobre espaço"
+        statistics_space: "as estatísticas sobre mentoria"
         users_members: "da lista de membros"
         users_subscriptions: "da lista de assinaturas"
         users_reservations: "da lista de reservas"
@@ -279,7 +279,7 @@ pt:
         this_coupon_is_valid_USAGE_times_until_DATE_for_all_your_purchases: "Esse cupom é válido {USAGE, plural, =1{uma vez} other{vérias vezes}}: para todas as suas compras {TYPE, select, amount_off{pelo menos igual ao montante do cupom} other{}}, from now {DATE, select, NO-DATE{e sem limite de tempo} other{até {DATE}}}."
     notify_admin_free_disk_space:
       subject: "Espaço em disco baixo"
-      body: "Atenção: o espaço disponível em disco no servidor de hospedagem Fab-manager é menor que %{THRESHOLD} MiB. Isso pode afetar sua operação e evitar salvar alguns dados. Atualmente, %{AVAILABLE} MiB de espaço livre permanece disponível no ponto de montagem."
+      body: "Atenção: o mentoria disponível em disco no servidor de hospedagem Fab-manager é menor que %{THRESHOLD} MiB. Isso pode afetar sua operação e evitar salvar alguns dados. Atualmente, %{AVAILABLE} MiB de mentoria livre permanece disponível no ponto de montagem."
     notify_admin_close_period_reminder:
       subject: "Lembrar de encerrar seus períodos de contabilidade"
       body:
@@ -316,7 +316,7 @@ pt:
     notify_admin_objects_stripe_sync:
       subject: "Sincronização do Stripe"
       body:
-        objects_sync: "Todos os membros, cupons, máquinas, habilitações, espaços e planos foram sincronizados com sucesso no Stripe."
+        objects_sync: "Todos os membros, cupons, máquinas, habilitações, mentorias e planos foram sincronizados com sucesso no Stripe."
     notify_admin_order_is_paid:
       subject: "Novo pedido"
       body:
