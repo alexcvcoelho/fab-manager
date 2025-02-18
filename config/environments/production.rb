@@ -37,7 +37,7 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  config.force_ssl = true
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
@@ -62,15 +62,6 @@ Rails.application.configure do
   # config.action_mailer.perform_deliveries = true
   # config.action_mailer.raise_delivery_errors = false
   # config.action_mailer.default :charset => "utf-8"
-  puts "SMTP ADDRESS: #{Rails.application.secrets.smtp_address}"
-  puts "SMTP PORT: #{Rails.application.secrets.smtp_port}"
-  puts "SMTP USER NAME: #{Rails.application.secrets.smtp_user_name}"
-  puts "SMTP PASSWORD: #{Rails.application.secrets.smtp_password}"
-  puts "SMTP AUTHENTICATION: #{Rails.application.secrets.smtp_authentication}"
-  puts "SMTP ENABLE STARTTLS AUTO: #{Rails.application.secrets.smtp_enable_starttls_auto}"
-  puts "SMTP OPENSSL VERIFY MODE: #{Rails.application.secrets.smtp_openssl_verify_mode}"
-  puts "SMTP TLS: #{Rails.application.secrets.smtp_tls}"
-  puts "SMTP_DOMAIN: #{Rails.application.secrets.smtp_domain}"
   
   config.action_mailer.smtp_settings = {  
     address: Rails.application.secrets.smtp_address,
@@ -116,4 +107,14 @@ Rails.application.configure do
     host: Rails.application.secrets.default_host,
     protocol: Rails.application.secrets.default_protocol
   }
+
+  config.action_dispatch.default_headers = {
+    'X-Frame-Options' => 'SAMEORIGIN',
+    'X-Content-Type-Options' => 'nosniff',
+    'X-XSS-Protection' => '1; mode=block',
+    'Content-Security-Policy' => "default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests;",
+    'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
+    'Server' => ''
+  }
+  
 end

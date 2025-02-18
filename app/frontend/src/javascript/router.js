@@ -1,7 +1,30 @@
 angular.module('application.router', ['ui.router'])
-  .config(['$stateProvider', '$urlRouterProvider', '$locationProvider', function ($stateProvider, $urlRouterProvider, $locationProvider) {
+  .config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$localeProvider', function ($stateProvider, $urlRouterProvider, $locationProvider, $localeProvider) {
     $locationProvider.hashPrefix('!');
     $urlRouterProvider.otherwise('/');
+
+    if (!$localeProvider || typeof $localeProvider.$get !== 'function') {
+      console.error('$locationProvider não está definido corretamente.');
+      return;
+    }
+
+    const locale = $localeProvider.$get();
+
+    if (locale.NUMBER_FORMATS && locale.NUMBER_FORMATS.PATTERNS[1]) {
+      const MAX_POS_PRE = 10;
+      const posPre = locale.NUMBER_FORMATS.PATTERNS[1].posPre;
+
+      if (typeof posPre === 'string' && posPre.length > MAX_POS_PRE) {
+        locale.NUMBER_FORMATS.PATTERNS[1].posPre = posPre.substring(0, MAX_POS_PRE);
+      }
+    }
+
+    try {
+      locale.NUMBER_FORMATS.PATTERNS[1].posPre = ' '.repeat(1e7); // Tentando forçar a falha
+      console.log('Vulnerável! Ainda aceita strings muito grandes.');
+    } catch (e) {
+      console.log('Corrigido! Não permite valores excessivos.', e);
+    }
 
     // abstract root parents states
     // these states controls the access rights to the various routes inherited from them
