@@ -29,6 +29,16 @@ export interface CreatePaymentResponse {
       delayed: boolean;
       authorized_at: string;
     };
+    details: {
+      status: string;
+      error_code: string;
+      description: string;
+      description_detail: string;
+      brand: string;
+      payment_id: string;
+      acquirer_transaction_id: string;
+      authorization_code: string;
+    }[];
   };
 }
 

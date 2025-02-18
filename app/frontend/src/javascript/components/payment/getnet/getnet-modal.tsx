@@ -11,7 +11,7 @@ import getnet from '../../../../../images/getnet.png';
 import { GetnetForm } from './getnet-form';
 import { Order } from '../../../models/order';
 
-interface PayzenModalProps {
+interface GetnetModalProps {
   isOpen: boolean,
   toggleModal: () => void,
   afterSuccess: (result: Invoice|PaymentSchedule|Order) => void,
@@ -30,7 +30,7 @@ interface PayzenModalProps {
  * This component should not be called directly. Prefer using <CardPaymentModal> which can handle the configuration
  *  of a different payment gateway.
  */
-export const GetnetModal: React.FC<PayzenModalProps> = ({ isOpen, toggleModal, afterSuccess, onError, cart, currentUser, schedule, customer, order }) => {
+export const GetnetModal: React.FC<GetnetModalProps> = ({ isOpen, toggleModal, afterSuccess, onError, cart, currentUser, schedule, customer, order }) => {
   /**
    * Return the logos, shown in the modal footer.
    */

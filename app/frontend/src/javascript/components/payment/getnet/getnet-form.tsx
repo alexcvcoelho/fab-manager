@@ -46,7 +46,11 @@ export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onE
             onSuccess(confirmation);
           }).catch(e => onError(e));
         } else {
-          throw Error('Erro ao realizar pagamento.');
+          if (payment.result.details.length === 0) {
+            onError('Erro ao realizar pagamento. Confira os dados do cartão e tente novamente.');
+          } else {
+            onError(payment.result.details[0].description);
+          }
         }
       }).catch(e => onError(e));
     } catch (err) {
