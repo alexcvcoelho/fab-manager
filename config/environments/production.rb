@@ -37,7 +37,7 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+  #config.force_ssl = true
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
@@ -108,13 +108,13 @@ Rails.application.configure do
     protocol: Rails.application.secrets.default_protocol
   }
 
-  config.action_dispatch.default_headers = {
-    'X-Frame-Options' => 'SAMEORIGIN',
-    'X-Content-Type-Options' => 'nosniff',
-    'X-XSS-Protection' => '1; mode=block',
-    'Content-Security-Policy' => "default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests;",
-    'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
-    'Server' => ''
-  }
+  # config.action_dispatch.default_headers = {
+  #   'X-Frame-Options' => 'SAMEORIGIN',
+  #   'X-Content-Type-Options' => 'nosniff',
+  #   'X-XSS-Protection' => '1; mode=block',
+  #   'Content-Security-Policy' => "default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests;",
+  #   'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
+  #   'Server' => ''
+  # }
   
 end

@@ -321,7 +321,7 @@ pt:
         from_time: "Das" #e.g. from 18:00 to 21:00
         to_time: "ás" #e.g. from 18:00 to 21:00
         full_price_: "Valor inteira:"
-        tickets_still_availables: "Tickets ainda disponíveis:"
+        tickets_still_availables: "Vagas ainda disponíveis:"
         sold_out: "Esgotado."
         without_reservation: "Sem reservas"
         cancelled: "Cancelado"

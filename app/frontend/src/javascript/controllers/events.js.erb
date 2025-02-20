@@ -290,6 +290,8 @@ Application.Controllers.controller('ShowEventController', ['$scope', '$state', '
             } else {
               $scope.reserve.toReserve = !$scope.reserve.toReserve;
             }
+            $scope.reserve.nbReservePlaces = 1;
+            $scope.changeNbPlaces();
           });
         } else {
           if (AuthService.isAuthorized(['admin', 'manager'])) {
@@ -307,6 +309,8 @@ Application.Controllers.controller('ShowEventController', ['$scope', '$state', '
               }
             });
           }
+          $scope.reserve.nbReservePlaces = 1;
+          $scope.changeNbPlaces();
         }
       }
     };

@@ -46,16 +46,6 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :smtp
 
   config.action_mailer.raise_delivery_errors = true
-
-  puts "SMTP ADDRESS: #{Rails.application.secrets.smtp_address}"
-  puts "SMTP PORT: #{Rails.application.secrets.smtp_port}"
-  puts "SMTP USER NAME: #{Rails.application.secrets.smtp_user_name}"
-  puts "SMTP PASSWORD: #{Rails.application.secrets.smtp_password}"
-  puts "SMTP AUTHENTICATION: #{Rails.application.secrets.smtp_authentication}"
-  puts "SMTP ENABLE STARTTLS AUTO: #{Rails.application.secrets.smtp_enable_starttls_auto}"
-  puts "SMTP OPENSSL VERIFY MODE: #{Rails.application.secrets.smtp_openssl_verify_mode}"
-  puts "SMTP TLS: #{Rails.application.secrets.smtp_tls}"
-  puts "SMTP_DOMAIN: #{Rails.application.secrets.smtp_domain}"
   
   config.action_mailer.smtp_settings = {  
     address: Rails.application.secrets.smtp_address,
@@ -119,24 +109,24 @@ Rails.application.configure do
     Bullet.add_footer    = true
   end
 
-  config.action_dispatch.default_headers = {
-    # Impede que o site seja carregado dentro de um iframe (protege contra Clickjacking)
-    'X-Frame-Options' => 'SAMEORIGIN',
+  # config.action_dispatch.default_headers = {
+  #   # Impede que o site seja carregado dentro de um iframe (protege contra Clickjacking)
+  #   'X-Frame-Options' => 'SAMEORIGIN',
 
-    # Impede que navegadores infiram o MIME Type dos arquivos (evita ataques XSS via download)
-    'X-Content-Type-Options' => 'nosniff',
+  #   # Impede que navegadores infiram o MIME Type dos arquivos (evita ataques XSS via download)
+  #   'X-Content-Type-Options' => 'nosniff',
 
-    # Ativa a proteção contra ataques XSS no Chrome e Edge
-    'X-XSS-Protection' => '1; mode=block',
+  #   # Ativa a proteção contra ataques XSS no Chrome e Edge
+  #   'X-XSS-Protection' => '1; mode=block',
 
-    # Configuração da política de segurança de conteúdo (protege contra XSS e Data Injection)
-    'Content-Security-Policy' => "default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests;",
+  #   # Configuração da política de segurança de conteúdo (protege contra XSS e Data Injection)
+  #   'Content-Security-Policy' => "default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests;",
 
-    # Obriga a conexão HTTPS e evita ataques MITM (se for um site público, adicionar preload e enviar para https://hstspreload.org/)
-    'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
+  #   # Obriga a conexão HTTPS e evita ataques MITM (se for um site público, adicionar preload e enviar para https://hstspreload.org/)
+  #   'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
 
-    # Remove o cabeçalho de identificação do servidor (oculta a versão do Rails e servidor para evitar fingerprinting)
-    'Server' => ''
-  }
+  #   # Remove o cabeçalho de identificação do servidor (oculta a versão do Rails e servidor para evitar fingerprinting)
+  #   'Server' => ''
+  # }
   
 end

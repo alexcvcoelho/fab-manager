@@ -115,25 +115,25 @@
               <div class="panel-body">
                 <div class="row">
                   <label class="col-sm-6 control-label">{{ 'app.public.events_show.full_price_' | translate }} <span class="text-blue">{{event.amount | currency}}</span></label>
-                  <div class="col-sm-6">
+                  <!-- <div class="col-sm-6">
                     <select ng-model="reserve.nbReservePlaces" ng-change="changeNbPlaces()">
                       <option ng-repeat="(index, i) in reserve.nbPlaces.normal" ng-if="index == 1" value="{{i}}">
                         {{ i }}
                       </option>
                     </select>
                     {{ 'app.public.events_show.ticket' | translate:{NUMBER: reserve.nbReservePlaces} }}
-                  </div>
+                  </div> -->
                 </div>
                 <div class="row" ng-repeat="price in event.event_price_categories_attributes">
                   <label class="col-sm-6 control-label">{{price.category.name}} : <span class="text-blue">{{price.amount | currency}}</span></label>
-                  <div class="col-sm-6">
+                  <!-- <div class="col-sm-6">
                     <select ng-model="reserve.nbReservePlaces" ng-change="changeNbPlaces()">
                       <option ng-repeat="(index, i) in reserve.nbPlaces.normal" ng-if="index == 1" value="{{i}}">
                         {{ i }}
                       </option>
                     </select>
                     {{ 'app.public.events_show.ticket' | translate:{NUMBER: reserve.nbReservePlaces} }}
-                  </div>
+                  </div> -->
                 </div>
 
                 <div ng-show="currentUser.role == 'admin'" class="m-t">
@@ -186,7 +186,7 @@
             <span ng-show="reservations.length > 0" translate>{{ 'app.public.events_show.thanks_for_coming' }}</span>
             <a ui-sref="app.public.events_list" translate>{{ 'app.public.events_show.view_event_list' }}</a>
           </div>
-          <button class="btn btn-warning-full rounded btn-block text-sm" ng-click="reserveEvent()" ng-show="isShowReserveEventButton()">{{ 'app.public.events_show.book' | translate }}</button>
+          <button ng-show="reservations.length < 1" class="btn btn-warning-full rounded btn-block text-sm" ng-click="reserveEvent()" ng-show="isShowReserveEventButton()">{{ 'app.public.events_show.book' | translate }}</button>
           <uib-alert type="danger" ng-if="ctrl.member.id && !isUserValidatedByType()">
             <p class="text-sm">
               <i class="fa fa-warning"></i>
