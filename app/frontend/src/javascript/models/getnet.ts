@@ -14,6 +14,7 @@ export interface CreatePaymentResponse {
     currency: string;
     order_id: string;
     status: 'CANCELED' | 'APPROVED' | 'DENIED' | 'AUTHORIZED' | 'CONFIRMED';
+    message: string;
     payment_id: string;
     received_at: string;
     credit: {

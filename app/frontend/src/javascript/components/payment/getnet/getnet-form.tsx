@@ -45,6 +45,8 @@ export const GetnetForm: React.FC<GetnetFormProps> = ({ onSubmit, onSuccess, onE
           confirmPayment(payment).then((confirmation) => {
             onSuccess(confirmation);
           }).catch(e => onError(e));
+        } else if (payment.result.message === 'DENY') {
+          onError('Transação negada por regra de segurança do sistema de Antifraude.');
         } else {
           if (payment.result.details.length === 0) {
             onError('Erro ao realizar pagamento. Confira os dados do cartão e tente novamente.');

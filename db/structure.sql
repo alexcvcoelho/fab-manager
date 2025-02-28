@@ -109,8 +109,6 @@ $_$;
 
 SET default_tablespace = '';
 
-SET default_table_access_method = heap;
-
 --
 -- Name: abuses; Type: TABLE; Schema: public; Owner: -
 --
@@ -7480,6 +7478,20 @@ CREATE INDEX index_wallets_on_invoicing_profile_id ON public.wallets USING btree
 
 
 --
+-- Name: profiles_lower_unaccent_first_name_trgm_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX profiles_lower_unaccent_first_name_trgm_idx ON public.profiles USING gin (lower(public.f_unaccent((first_name)::text)) public.gin_trgm_ops);
+
+
+--
+-- Name: profiles_lower_unaccent_last_name_trgm_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX profiles_lower_unaccent_last_name_trgm_idx ON public.profiles USING gin (lower(public.f_unaccent((last_name)::text)) public.gin_trgm_ops);
+
+
+--
 -- Name: projects_search_vector_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -7537,7 +7549,7 @@ CREATE RULE chained_elements_upd_protect AS
 -- Name: projects projects_search_content_trigger; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER projects_search_content_trigger BEFORE INSERT OR UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION public.fill_search_vector_for_project();
+CREATE TRIGGER projects_search_content_trigger BEFORE INSERT OR UPDATE ON public.projects FOR EACH ROW EXECUTE PROCEDURE public.fill_search_vector_for_project();
 
 
 --

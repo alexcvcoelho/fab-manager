@@ -79,8 +79,19 @@ VOLUME /usr/src/volume/invoices \
        /usr/src/volume/log \
        /var/log/supervisor
 
+COPY docker/entrypoint.sh ./
+
+# Start and enable SSH
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends dialog \
+    && apt-get install -y --no-install-recommends openssh-server \
+    && echo "root:Docker!" | chpasswd \
+    && chmod u+x ./entrypoint.sh
+
+COPY docker/sshd_config /etc/ssh/
+  
 # Expose port 3000 to the Docker host, so we can access it from the outside
-EXPOSE 3000
+EXPOSE 3000 2222
 
 # Permission to evit access denied for supervisor
 RUN chmod -R a+w /usr/src/app
@@ -90,4 +101,4 @@ RUN chmod -R a+w /var/log
 # The main command to run when the container starts. Also tell the Rails server
 # to bind to all interfaces by default.
 COPY docker/supervisor.conf /etc/supervisor/conf.d/fabmanager.conf
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/fabmanager.conf"]
+ENTRYPOINT [ "./entrypoint.sh" ] 
