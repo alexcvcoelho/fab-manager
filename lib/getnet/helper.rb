@@ -13,6 +13,7 @@ class GetNet::Helper < Payment::Helper
       return true
       return false unless Setting.get('online_payment_module')
       return false unless Setting.get('payment_gateway') == 'getnet'
+
       res = true
       %w[getnet_token getnet_seller_id getnet_client_id getnet_client_secret].each do |pg_setting|
         res = false unless Setting.get(pg_setting).present?
@@ -26,7 +27,7 @@ class GetNet::Helper < Payment::Helper
 
     def card_token(card_number, customer_id)
       {
-        card_number: card_number.gsub(" ", ""),
+        card_number: card_number.gsub(' ', ''),
         customer_id: customer_id.to_s
       }
     end
@@ -59,14 +60,14 @@ class GetNet::Helper < Payment::Helper
       {
         order_id: order_id.to_s,
         sales_tax: 0,
-        product_type: 'service',
+        product_type: 'service'
       }
     end
 
     def generate_device(request)
       {
         ip_address: request.remote_ip,
-        device_id: request.user_agent
+        device_id: "#{Setting.get('getnet_seller_id')}-#{SecureRandom.uuid}"
       }
     end
 
@@ -96,6 +97,5 @@ class GetNet::Helper < Payment::Helper
       # It's safe to truncate a hash. See https://crypto.stackexchange.com/questions/74646/sha3-255-one-bit-less
       SHA3::Digest.hexdigest(:sha224, content)[0...24]
     end
-
   end
 end
