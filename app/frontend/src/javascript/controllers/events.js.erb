@@ -316,6 +316,13 @@ Application.Controllers.controller('ShowEventController', ['$scope', '$state', '
     };
 
     /**
+    * Logic for show or not a button reservation
+    */
+    $scope.showButtonReservation = function () {
+      return $scope.reservations.filter(x => x.slots_reservations_attributes[0].canceled_at == null).length < 1
+    }
+
+    /**
      * Callback to deal with the reservations of the user selected in the dropdown list instead of the current user's
      * reservations. (admins only)
      */

@@ -186,7 +186,7 @@
             <span ng-show="reservations.length > 0" translate>{{ 'app.public.events_show.thanks_for_coming' }}</span>
             <a ui-sref="app.public.events_list" translate>{{ 'app.public.events_show.view_event_list' }}</a>
           </div>
-          <button ng-show="reservations.length < 1" class="btn btn-warning-full rounded btn-block text-sm" ng-click="reserveEvent()" ng-show="isShowReserveEventButton()">{{ 'app.public.events_show.book' | translate }}</button>
+          <button ng-show="showButtonReservation()" class="btn btn-warning-full rounded btn-block text-sm" ng-click="reserveEvent()" ng-show="isShowReserveEventButton()">{{ 'app.public.events_show.book' | translate }}</button>
           <uib-alert type="danger" ng-if="ctrl.member.id && !isUserValidatedByType()">
             <p class="text-sm">
               <i class="fa fa-warning"></i>
