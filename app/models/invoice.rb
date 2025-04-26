@@ -18,6 +18,7 @@ class Invoice < PaymentDocument
   has_one :payment_schedule_item, dependent: :restrict_with_error
   has_one :payment_gateway_object, as: :item, dependent: :destroy
   has_one :order, dependent: :restrict_with_error
+  has_one :getnet_transaction, dependent: :destroy
   belongs_to :operator_profile, class_name: 'InvoicingProfile'
 
   has_many :accounting_lines, dependent: :destroy
@@ -171,7 +172,7 @@ class Invoice < PaymentDocument
 
   def payment_details(mean)
     case mean
-    when [:card, :boleto]
+    when %i[card boleto]
       if paid_by_card? || paid_by_boleto?
         {
           payment_mean: mean,

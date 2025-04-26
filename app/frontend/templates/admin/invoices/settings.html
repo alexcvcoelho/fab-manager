@@ -77,6 +77,10 @@
         <p class="invoice-payment" translate translate-values="{DATE:(today | amDateFormat:'L'), TIME:(today | amDateFormat:'LT'), AMOUNT:(30.0 | currency)}">
           {{ 'app.admin.invoices.settlement_by_debit_card_on_DATE_at_TIME_for_an_amount_of_AMOUNT' }}
         </p>
+        <p>
+          Código NSU: XXXXXXX <br>
+          Autorização: XXXXXX
+        </p>
       </div>
       <div medium-editor class="invoice-text invoice-editable" ng-model="invoice.text.content"
            options='{

@@ -39,12 +39,10 @@ class Invoices::PaymentDetailsService
         end
 
         if invoice.payment_gateway_object
-          pagseguro_intent = PagseguroIntent.find_by(order_id: invoice.payment_gateway_object.gateway_object_id)
-          if pagseguro_intent
-            if pagseguro_intent.payment_method? == 'card'
-              payment_verbose += " - Pago #{pagseguro_intent.installments > 1 ? "em #{pagseguro_intent.installments} vezes" : " à vista"} - NSU: #{pagseguro_intent.nsu}"
-            end
-            payment_verbose += " - Data da confirmação: #{I18n.l(pagseguro_intent.paid_at.to_date)}"
+          getnet_transaction = GetnetTransaction.find_by(order_id: invoice.payment_gateway_object.gateway_object_id)
+          if getnet_transaction
+            payment_verbose += "\nNSU: #{getnet_transaction.payload['credit']['terminal_nsu']}"
+            payment_verbose += "\nAutorização: #{getnet_transaction.payload['credit']['authorization_code']}"
           end
         end
         payment_verbose

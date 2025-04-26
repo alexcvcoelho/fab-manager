@@ -1300,6 +1300,39 @@ ALTER SEQUENCE public.friendly_id_slugs_id_seq OWNED BY public.friendly_id_slugs
 
 
 --
+-- Name: getnet_transactions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.getnet_transactions (
+    id bigint NOT NULL,
+    order_id character varying,
+    invoice_id bigint,
+    payload jsonb,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: getnet_transactions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.getnet_transactions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: getnet_transactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.getnet_transactions_id_seq OWNED BY public.getnet_transactions.id;
+
+
+--
 -- Name: groups; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -4572,6 +4605,13 @@ ALTER TABLE ONLY public.friendly_id_slugs ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
+-- Name: getnet_transactions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.getnet_transactions ALTER COLUMN id SET DEFAULT nextval('public.getnet_transactions_id_seq'::regclass);
+
+
+--
 -- Name: groups id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5444,6 +5484,14 @@ ALTER TABLE ONLY public.exports
 
 ALTER TABLE ONLY public.friendly_id_slugs
     ADD CONSTRAINT friendly_id_slugs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: getnet_transactions getnet_transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.getnet_transactions
+    ADD CONSTRAINT getnet_transactions_pkey PRIMARY KEY (id);
 
 
 --
@@ -6495,6 +6543,13 @@ CREATE INDEX index_friendly_id_slugs_on_sluggable_id ON public.friendly_id_slugs
 --
 
 CREATE INDEX index_friendly_id_slugs_on_sluggable_type ON public.friendly_id_slugs USING btree (sluggable_type);
+
+
+--
+-- Name: index_getnet_transactions_on_invoice_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_getnet_transactions_on_invoice_id ON public.getnet_transactions USING btree (invoice_id);
 
 
 --
@@ -8185,6 +8240,14 @@ ALTER TABLE ONLY public.statistic_profile_prepaid_packs
 
 
 --
+-- Name: getnet_transactions fk_rails_b27db9559d; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.getnet_transactions
+    ADD CONSTRAINT fk_rails_b27db9559d FOREIGN KEY (invoice_id) REFERENCES public.invoices(id);
+
+
+--
 -- Name: orders fk_rails_b33ed6c672; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -8840,6 +8903,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20231028142810'),
 ('20231216140444'),
 ('20240310182318'),
-('20240310232527');
+('20240310232527'),
+('20250425220336');
 
 
