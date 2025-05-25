@@ -264,7 +264,7 @@ pt:
     boleto: "Boleto"
     deleted_user: "Usuário deletado"
     coupon: "Cupon usado"
-    pagseguro_identifier: "Identificador Pagseguro"
+    pagseguro_identifier: "Identificador Getnet"
     nsu: "NSU"
     paid_at: "Data do pagamento"
     installments: "Qtde. Parcelas"

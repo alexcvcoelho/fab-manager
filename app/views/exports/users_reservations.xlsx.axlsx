@@ -32,8 +32,9 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_reservations.reservation
   # data rows
   reservations.each do |resrv|
     invoice = resrv.original_invoice
+    puts invoice&.getnet_transaction&.payload&.class
+    getnet_transaction = invoice&.getnet_transaction&.payload
     payment_gateway_object = invoice&.payment_gateway_object
-    pagseguro_intent = payment_gateway_object&.pagseguro_intent
     data = [
       resrv.user&.id,
       resrv.user&.profile&.cpf,
@@ -45,11 +46,11 @@ wb.add_worksheet(name: ExcelService.name_safe(t('export_reservations.reservation
       resrv.reservable_type == 'Event' ? resrv.total_booked_seats : resrv.slots.count,
       invoice&.paid_by_card? ? t('export_reservations.online_payment') : invoice&.paid_by_boleto? ? t('export_reservations.boleto')  : t('export_reservations.local_payment'),
       invoice&.coupon&.nil? ? '' : invoice&.coupon&.name,
-      pagseguro_intent&.order_id,
-      pagseguro_intent&.nsu,
-      pagseguro_intent&.paid_at&.to_date,
-      pagseguro_intent&.installments,      
-      number_to_currency(pagseguro_intent&.paid_value),
+      getnet_transaction&.dig("order_id"),
+      getnet_transaction&.dig("credit", "terminal_nsu"),
+      getnet_transaction&.dig("received_at")&.to_date,
+      "1",      
+      number_to_currency((getnet_transaction&.dig("amount") || 0) / 100.00),
       resrv.slots_to_string
     ]
     styles = [nil, nil, nil, nil, date, nil, nil, nil, nil, nil, nil, nil, date, nil, nil, nil]
