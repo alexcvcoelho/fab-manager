@@ -49,16 +49,16 @@ RUN mkdir -p /usr/src/app && \
 COPY docker/database.yml /usr/src/app/config/database.yml
 COPY . /usr/src/app
 
-RUN ln -s /usr/src/volume/invoices /usr/src/app/invoices && \
-    ln -s /usr/src/volume/payment_schedules /usr/src/app/payment_schedules && \
-    ln -s /usr/src/volume/exports /usr/src/app/exports && \
-    ln -s /usr/src/volume/imports /usr/src/app/imports && \
-    ln -s /usr/src/volume/public /usr/src/app/public && \
-    ln -s /usr/src/volume/public/uploads /usr/src/app/public/uploads && \
-    ln -s /usr/src/volume/public/packs /usr/src/app/public/packs && \
-    ln -s /usr/src/volume/accounting /usr/src/app/accounting && \
-    ln -s /usr/src/volume/supporting_document_files /usr/src/app/supporting_document_files && \
-    ln -s /usr/src/volume/log /usr/src/app/log
+RUN ln -s /usr/src/volume2/invoices /usr/src/app/invoices && \
+    ln -s /usr/src/volume2/payment_schedules /usr/src/app/payment_schedules && \
+    ln -s /usr/src/volume2/exports /usr/src/app/exports && \
+    ln -s /usr/src/volume2/imports /usr/src/app/imports && \
+    ln -s /usr/src/volume2/public /usr/src/app/public && \
+    ln -s /usr/src/volume2/public/uploads /usr/src/app/public/uploads && \
+    ln -s /usr/src/volume2/public/packs /usr/src/app/public/packs && \
+    ln -s /usr/src/volume2/accounting /usr/src/app/accounting && \
+    ln -s /usr/src/volume2/supporting_document_files /usr/src/app/supporting_document_files && \
+    ln -s /usr/src/volume2/log /usr/src/app/log
 
 COPY Gemfile /tmp/
 COPY Gemfile.lock /tmp/
