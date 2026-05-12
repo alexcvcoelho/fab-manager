@@ -82,9 +82,44 @@ Esses não precisam de `authorize`, mas precisam de declaração explícita de "
 
 **Próximo passo:** alinhar com Claupper se acesso a logs é viável, ou aceitar que ausência de evidência de exploração será documentada como "não verificável retroativamente". Para a Fase 5 (artefato LGPD), o argumento defensável é: pentest reportou em 2026-03-06, foram tomadas medidas corretivas em [data], não há sinal de exploração reportado por terceiros.
 
-## Próximas fases
+## Status das fases
 
-- **Fase 1 (2-3h)** — Defesas estruturais: `authenticate_user!` + `verify_authorized` + `verify_policy_scoped` em `API::APIController`. Suite de testes vira instrumento de auditoria.
+### ✅ Fase 1 — Defesas estruturais (concluída)
+
+`API::APIController` agora declara `after_action :verify_authorized` (Pundit). Qualquer action que termine sem chamar `authorize(...)` ou `skip_authorization` levanta `Pundit::AuthorizationNotPerformedError`, transformando "esqueci de autorizar" de buraco silencioso em erro alto no teste.
+
+**Decisões deliberadas:**
+- **Só `verify_authorized` por enquanto** — não `verify_policy_scoped`. Tem muito collection method custom (`search`, `list`, `last_published`, `current`) que escapariam da regra "só index". Cobrir esses casos vira passo dentro da Fase 3 ou uma sub-fase separada se necessário.
+- **Sem mudar autenticação default agora** — cada controller continua opt-in pra `authenticate_user!`. Misturar "muda quem precisa estar logado" com "muda quem está autorizado" duplica risco de regressão. Authentication baseline pode ser endurecida em fase posterior.
+- **`unless: :devise_controller?`** — ações do Devise (sign_in, sign_up etc.) não usam Pundit.
+
+**Como rodar a suite localmente (você):**
+
+```bash
+# Setup das envs (uma vez)
+# Garantir que .env tem LOG_LEVEL=debug (ou outro valor não-vazio)
+
+# Rodar suite completa
+scripts/tests.sh
+
+# Ou só os controllers de API (mais rápido pra triar)
+scripts/tests.sh test/integration/
+```
+
+**O que esperar:**
+
+Com base na baseline ([`inventory_2026-05-07.md`](inventory_2026-05-07.md)), prevemos **dezenas de violações** — uma para cada action sem `authorize`. Categorias esperadas:
+
+| Categoria | Quantidade aproximada | Tratamento na Fase 2 |
+|---|---|---|
+| Catálogo público (events#show, machines#show, plans#show, etc.) | ~13 | Adicionar `skip_authorization` no método com comentário explicando |
+| Vetores reais de IDOR (projects#show, supporting_document_files#show, etc.) | ~10 | Adicionar `authorize` + policy correta na Fase 3 |
+| Collection methods custom (search, list, last_published) | ~vários | Decidir caso a caso: `authorize :resource, :action?` ou `skip_authorization` se realmente público |
+| Falsos positivos da heurística estática | poucos | Validar manualmente — pode ter `authorize` em forma que o regex não detectou |
+
+A saída do `scripts/tests.sh` vira o ponto de partida da Fase 2.
+
+### Próximas fases
 - **Fase 2 (3-4h)** — Triagem das quebras: classificar entre "público legítimo", "esqueceu auth", "esqueceu authorize". Confirmar/refutar candidatos da seção acima.
 - **Fase 3 (6-8h)** — Fixes na ordem: (3a) `UserPolicy#show?` + serializer de members; (3b) `ProjectPolicy` + `ProjectsController`; (3c) `supporting_document_files`; (3d) demais 🔴 confirmados; (3e) Firjan custom (Getnet, PagSeguro, brazillian_data — todos 🟢 no baseline, mas verificar manualmente).
 - **Fase 4 (1-2h)** — OpenAPI sweep.
