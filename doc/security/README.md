@@ -119,8 +119,31 @@ Com base na baseline ([`inventory_2026-05-07.md`](inventory_2026-05-07.md)), pre
 
 A saída do `scripts/tests.sh` vira o ponto de partida da Fase 2.
 
+### ✅ Fase 3a — `UserPolicy#show?` (concluída)
+
+Removida a cláusula `(record.is_allow_contact && record.member?)`. Predicate final:
+
+```ruby
+def show?
+  user.admin? || user.manager? || (user.id == record.id)
+end
+```
+
+`is_allow_contact` é mantido como flag funcional para o diretório de membros (`Members::ListService` e `Members::MembersService`), onde filtra quem aparece disponível para contato. Não regrança leitura do perfil completo.
+
+**Escopo deliberadamente limitado nesta fase, decidido em 2026-05-12:**
+- Não inclui troca de default da coluna (`true` → `false`) — decisão de produto sobre LGPD opt-in fica para alinhamento com Claupper.
+- Não inclui troca do default `$scope.user.is_allow_contact: true` em `app/frontend/src/javascript/controllers/application.js`.
+- Não inclui revisão do serializer em `app/views/api/members/show.json.jbuilder` (admin/manager/self ainda recebem PII completa — minimização LGPD em aberto).
+
+**Regressão coberta:** `test/integration/members/as_member_test.rb` — 4 testes que falham se a cláusula vulnerável voltar (ex.: rebase upstream descuidado).
+
 ### Próximas fases
-- **Fase 2 (3-4h)** — Triagem das quebras: classificar entre "público legítimo", "esqueceu auth", "esqueceu authorize". Confirmar/refutar candidatos da seção acima.
-- **Fase 3 (6-8h)** — Fixes na ordem: (3a) `UserPolicy#show?` + serializer de members; (3b) `ProjectPolicy` + `ProjectsController`; (3c) `supporting_document_files`; (3d) demais 🔴 confirmados; (3e) Firjan custom (Getnet, PagSeguro, brazillian_data — todos 🟢 no baseline, mas verificar manualmente).
+
+- **Fase 2 (3-4h)** — Triagem das quebras da suite após Fase 1: classificar entre "público legítimo", "esqueceu auth", "esqueceu authorize". Confirmar/refutar candidatos da seção acima.
+- **Fase 3b** — `ProjectPolicy` + `ProjectsController#show`: adicionar `authorize` + definir `show?` (público para `state == 'published'`, autor/colaborador/admin para drafts).
+- **Fase 3c** — `supporting_document_files#show`: adicionar `authorize` e policy estrita.
+- **Fase 3d** — Demais actions 🔴 confirmadas no baseline.
+- **Fase 3e** — Sweep dos Firjan custom controllers (Getnet, PagSeguro, brazillian_data — todos 🟢 no baseline, mas conferência manual).
 - **Fase 4 (1-2h)** — OpenAPI sweep.
 - **Fase 5 (1h)** — Documentação LGPD: timeline, endpoints, fixes, evidências.

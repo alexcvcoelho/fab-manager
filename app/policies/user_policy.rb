@@ -15,8 +15,21 @@ class UserPolicy < ApplicationPolicy
     end
   end
 
+  # Authorize reading a user's full profile.
+  #
+  # The previous predicate granted access whenever `record.is_allow_contact &&
+  # record.member?` was true, which exposed PII (CPF, RG, mother's name,
+  # address, IP) of every member with the "allow contact" flag — i.e. almost
+  # the entire member base — to any authenticated user. Reported by external
+  # pentest in 2026-03 and confirmed exploitable in 2026-05. See
+  # doc/security/README.md.
+  #
+  # `is_allow_contact` is preserved as a flag for the members directory
+  # (Members::ListService and Members::MembersService), where it filters
+  # who appears as available for contact. It must NOT regrant access to
+  # the full profile here.
   def show?
-    user.admin? || user.manager? || (record.is_allow_contact && record.member?) || (user.id == record.id)
+    user.admin? || user.manager? || (user.id == record.id)
   end
 
   def current?
