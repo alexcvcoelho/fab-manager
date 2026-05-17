@@ -81,7 +81,20 @@ class User < ApplicationRecord
 
   validate :cgu_must_accept, if: :new_record?
 
-  validates :username, presence: true, uniqueness: true, length: { maximum: 30 }
+  # Username is rendered in admin listings, notifications, and (potentially)
+  # mailer subjects, so allow only safe characters — no HTML delimiters.
+  # Closes the XSS Stored vector reported in the 2026-05-17 pentest
+  # (item #22 in doc/security/pentest-2026-05-17.md): previously a member
+  # could `PUT /api/members/:self_id` with `username = "<svg/onload=...>"`
+  # and have it persisted.
+  validates :username,
+            presence: true,
+            uniqueness: true,
+            length: { maximum: 30 },
+            format: {
+              with: /\A[a-zA-Z0-9._\-]+\z/,
+              message: I18n.t('activerecord.errors.models.user.attributes.username.invalid', default: 'só pode conter letras, números, ponto, hífen ou underscore')
+            }
   validate :password_complexity
 
   scope :active, -> { where(is_active: true) }
