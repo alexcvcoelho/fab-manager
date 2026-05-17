@@ -7,7 +7,63 @@ Diretório de artefatos da Task 2 (maio/2026): auditoria e correção de autoriz
 | Rodada | Branch | Status | Entrega |
 |---|---|---|---|
 | v1 | `feat/firjan-security-idor` → squash em `feat/firjan-report` (`f8f3d1675`) | ✅ Em produção | Fix `UserPolicy#show?` + baseline IDOR + analisador estático |
-| v2 | `feat/firjan-security-idor-v2` | 🚧 Em revisão | Patch upstream `fa5489ae6` adaptado + `groups` + `projects` |
+| v2 | `feat/firjan-security-idor-v2` | 🚧 Em revisão | Patch upstream `fa5489ae6` adaptado + `groups` |
+| v3 | `feat/firjan-security-idor-v2` (continuação) | 🚧 Em revisão | Achados do pentest browser-driven 2026-05-17: IDOR em show actions + Getnet authz + XSS hardening |
+
+## Entrega da rodada v3 (em aberto)
+
+Pentest browser-driven em 2026-05-17 (relatório completo em [`pentest-2026-05-17.md`](pentest-2026-05-17.md)) descobriu 22 achados, dos quais 7 críticos. Esta rodada fecha 6 deles (itens 7-11, 13 e 22 do relatório). O item 5 (auto-login sem email confirmation) foi deixado de fora por decisão do Alex.
+
+### Mudanças desta rodada (3 commits)
+
+**Commit 1 — `(security) close IDOR on show actions for orders/invoices/reservations/credits/supporting_document_files`**
+
+5 controllers tinham `show` action sem `authorize`. Member logado lia recurso de qualquer outro. Mesma anatomia em todos:
+
+| Endpoint | Vazava | Fix |
+|---|---|---|
+| `GET /api/orders/:id` | cart token + invoice_id de outros | `authorize @order` (policy já estava OK) |
+| `GET /api/credits/:id` | metadados administrativos | `authorize @credit` + `CreditPolicy#show?` (admin-only) |
+| `GET /api/supporting_document_files/:id` | filename + user_id (PII/LGPD) | `authorize @file` + `show?` espelhando `download?` |
+| `GET /api/invoices/:id` | total + items + reference + chained_footprint | `authorize @invoice` + `show?` espelhando `download?` |
+| `GET /api/reservations/:id` | `user_full_name` + padrão de uso | `authorize @reservation` + `show?` espelhando `update?` |
+
+Regressão: `test/integration/security/idor_show_actions_test.rb` (9 testes).
+
+**Commit 2 — `(security) restrict Getnet endpoints to current_user and require cart context`**
+
+`API::GetnetController` herdava apenas `authenticate_user!`. Member qualquer podia:
+- Probar credenciais Getnet via `sdk_test` (agora **admin-only**)
+- Tokenizar cartão com `customer_id` arbitrário (validation oracle + tokenização cross-user; agora forçado a `current_user.id`)
+- Crashar `create_payment`/`confirm_payment` com NoMethodError (177KB de stack HTML) — agora 422 limpo via `require_cart_items`
+
+Regressão: `test/integration/security/getnet_authz_test.rb` (6 testes).
+
+**Commit 3 — `(security) validate and sanitize user-controlled text fields (XSS hardening)`**
+
+`PUT /api/members/:id` aceitava `<script>` / `<svg onload>` em `username`, `first_name`, `last_name`, `interest`, etc. Apesar do Angular `{{ }}` escapar, os valores reaching mailers (10+ templates), PDFs gerados, e `publicProfile.html.erb` que usa `ng-bind-html` em `interest`/`software_mastered`.
+
+- **Profile**: `NAME_FORMAT = /\A[\p{L}\p{N}\s'.\-,()]+\z/u` aplicado a `first_name`, `last_name`, `social_name`, `mother_name`. Aceita `João D'Ávila`, `Silva-Santos`, `Maria José D'Ávila`, `João (Joca)`. Rejeita HTML delimiters.
+- **Profile**: `before_validation :sanitize_attributes` extendido para `strip_tags` em campos free-form (`interest`, `software_mastered`, `note`, `website`, `job`, `street`, `complement`, `neighborhood`, `rg`, `rg_issuing_organization`).
+- **User#username**: `/\A[a-zA-Z0-9._\-]+\z/`.
+
+Regressão: `test/integration/security/xss_hardening_test.rb` (4 testes).
+
+**Pré-deploy obrigatório**: rodar em produção (Rails console read-only) antes do deploy:
+```ruby
+Profile.find_each { |p| puts p.id unless p.valid? }
+```
+Se mais de ~5 profiles falham, ajustar `NAME_FORMAT` ou hot-fix em bulk antes do deploy.
+
+### Itens do pentest 2026-05-17 NÃO cobertos por esta rodada (decisão Alex)
+
+- **#5 Auto-login sem email confirmation** — fica para outra janela (decisão pendente sobre Devise.confirmable).
+- **#6, #14, #21 Verbose error pages e `/rails/info/routes`** — verificar em produção (provavelmente já gated por `Rails.env.production?`, mas confirmar).
+- **#15 PagSeguro/notify HMAC** — outra rodada.
+- **#16-18 Security headers** (CSP fraca, sem HSTS/Permissions-Policy/COOP/CORP/COEP) — defense in depth, outra rodada.
+- **#20 `/health` campo `stats`** — verificar o que é em `health_controller.rb`.
+- **#1, #2 LGPD signup excesso de coleta / `is_allow_contact` default true** — decisão de produto.
+- **#3 `/uploads/custom_asset_file/:id` previsível** — verificar se vale signed URLs.
 
 ## Entrega da rodada v2 (em aberto)
 
