@@ -6,6 +6,12 @@ class InvoicePolicy < ApplicationPolicy
     user.admin?
   end
 
+  # Reading a single invoice: owner (via invoicing_profile), or staff.
+  # Mirrors `download?` — they were inconsistent before this fix.
+  def show?
+    user.admin? || user.manager? || (record.invoicing_profile.user_id == user.id)
+  end
+
   def download?
     user.admin? || user.manager? || (record.invoicing_profile.user_id == user.id)
   end

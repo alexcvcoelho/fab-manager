@@ -15,7 +15,9 @@ class API::CreditsController < API::APIController
                end
   end
 
-  def show; end
+  def show
+    authorize @credit
+  end
 
   def create
     authorize Credit

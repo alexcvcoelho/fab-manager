@@ -6,6 +6,14 @@ class CreditPolicy < ApplicationPolicy
     user.admin?
   end
 
+  # Credits are tied to subscription plans (not to a single owner user),
+  # so reading an individual credit is administrative. The per-user view
+  # of available credits is exposed by `user_resource?` below, which still
+  # enforces ownership.
+  def show?
+    user.admin?
+  end
+
   def create?
     index?
   end
