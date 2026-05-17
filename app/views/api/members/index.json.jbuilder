@@ -8,9 +8,8 @@ json.array!(@members) do |member|
   json.maxMembers max_members unless @public_last_subscribed
 
   if @public_last_subscribed
-    # `/api/members/last_subscribed` is an unauthenticated endpoint. Only
-    # expose the absolute minimum needed to render a "recent members" widget
-    # on the homepage: display name + avatar. Mirrors upstream fa5489ae6.
+    # `/api/members/last_subscribed` is unauthenticated. Strip everything
+    # except the absolute minimum needed for the homepage widget.
     json.name member.profile.full_name
     if member.profile.user_avatar
       json.avatar do
@@ -18,18 +17,29 @@ json.array!(@members) do |member|
         json.attachment_url member.profile.user_avatar.attachment_url
       end
     end
-  else
+  elsif !@restricted_member_index
+    # Privileged listing (admin/manager): full administrative payload.
     json.username member.username
     json.slug member.slug
     json.name member.profile.full_name
     json.email member.email if current_user
     json.first_name member.profile.first_name
     json.last_name member.profile.last_name
-    json.need_completion member.need_completion? unless @restricted_member_index
-    json.group_id member.group_id unless @restricted_member_index
+    json.need_completion member.need_completion?
+    json.group_id member.group_id
   end
+  # Firjan-specific stricter-than-upstream behavior: when @restricted_member_index
+  # is set (any non-privileged caller), the listing returns only `id` and
+  # `maxMembers` — no email, username, slug, name, group_id, etc.
+  #
+  # Rationale: the Firjan installation hides the public members directory
+  # via feature flag, so non-privileged members have no legitimate UI flow
+  # that consumes this endpoint. Upstream `fa5489ae6` left email/name/slug
+  # exposed to any logged-in user; we go further to prevent enumeration of
+  # the member base (the exact vector the 2026-05 Firjan security team
+  # report flagged after the first round of fixes was deployed).
 
-  if !@public_last_subscribed && attribute_requested?(@requested_attributes, 'profile')
+  if !@public_last_subscribed && !@restricted_member_index && attribute_requested?(@requested_attributes, 'profile')
     json.profile do
       if member.profile.user_avatar
         json.user_avatar do
@@ -39,9 +49,7 @@ json.array!(@members) do |member|
       end
       json.first_name member.profile.first_name
       json.last_name member.profile.last_name
-      # Phone is PII and was the second-most-leaked field in the 2026-03 pentest.
-      # Stays admin/manager-only here.
-      json.phone member.profile.phone unless @restricted_member_index
+      json.phone member.profile.phone
     end
     if user_is_admin
       json.statistic_profile do
@@ -51,14 +59,14 @@ json.array!(@members) do |member|
     end
   end
 
-  if attribute_requested?(@requested_attributes, 'group') && member.group
+  if !@restricted_member_index && attribute_requested?(@requested_attributes, 'group') && member.group
     json.group do
       json.id member.group.id
       json.name member.group.name
     end
   end
 
-  if attribute_requested?(@requested_attributes, 'subscription')
+  if !@restricted_member_index && attribute_requested?(@requested_attributes, 'subscription')
     if user_is_admin
       if member.subscribed_plan
         json.subscribed_plan do
@@ -82,20 +90,20 @@ json.array!(@members) do |member|
     end
   end
 
-  if attribute_requested?(@requested_attributes, 'credits') || attribute_requested?(@requested_attributes, 'training_credits')
+  if !@restricted_member_index && (attribute_requested?(@requested_attributes, 'credits') || attribute_requested?(@requested_attributes, 'training_credits'))
     json.training_credits member.training_credits do |tc|
       json.training_id tc.creditable_id
     end
   end
 
-  if attribute_requested?(@requested_attributes, 'credits') || attribute_requested?(@requested_attributes, 'machine_credits')
+  if !@restricted_member_index && (attribute_requested?(@requested_attributes, 'credits') || attribute_requested?(@requested_attributes, 'machine_credits'))
     json.machine_credits member.machine_credits do |mc|
       json.machine_id mc.creditable_id
       json.hours_used mc.users_credits.find_by(user_id: member.id).hours_used
     end
   end
 
-  if attribute_requested?(@requested_attributes, 'tags')
+  if !@restricted_member_index && attribute_requested?(@requested_attributes, 'tags')
     json.tags member.tags do |t|
       json.id t.id
       json.name t.name

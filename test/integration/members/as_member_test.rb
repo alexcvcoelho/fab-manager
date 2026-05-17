@@ -72,27 +72,37 @@ class MembersAsMemberTest < ActionDispatch::IntegrationTest
 
   # ----- phase v2 — /api/members listing must NOT expose phone to non-privileged
 
-  test 'member listing does not expose phone to non-privileged callers' do
+  test 'member listing strips identifying fields for non-privileged callers' do
+    # Firjan-specific stricter-than-upstream behavior: members listing for a
+    # non-privileged caller returns only id + maxMembers. No email, username,
+    # slug, name, group_id, profile.* — to prevent member-base enumeration.
+    # The public members directory is hidden via feature flag in Firjan's
+    # install, so this endpoint has no legitimate non-priv UI consumer.
     get '/api/members?requested_attributes[]=profile', headers: default_headers
     assert_equal 200, response.status, response.body
     body = json_response(response.body)
     assert body.is_a?(Array), 'index returns an array'
+    forbidden = %i[email username slug name first_name last_name group_id need_completion profile group statistic_profile subscription subscribed_plan training_credits machine_credits tags]
     body.each do |item|
-      next unless item[:profile]
-
-      refute item[:profile].key?(:phone),
-             "member listing leaked profile.phone to a non-privileged caller (entry: #{item[:id]})"
+      forbidden.each do |key|
+        refute item.key?(key),
+               "member listing leaked #{key} to a non-privileged caller (entry id #{item[:id]})"
+      end
     end
   end
 
-  test 'admin listing still exposes phone (admins have legitimate access)' do
+  test 'admin listing still exposes phone and full payload (admins have legitimate access)' do
     logout(:user)
     login_as(@admin, scope: :user)
     get '/api/members?requested_attributes[]=profile', headers: default_headers
     assert_equal 200, response.status, response.body
     body = json_response(response.body)
     has_phone = body.any? { |item| item[:profile]&.key?(:phone) }
+    has_email = body.any? { |item| item.key?(:email) }
+    has_name  = body.any? { |item| item.key?(:name) }
     assert has_phone, 'admin must still see phone on listing — needed for administrative workflows'
+    assert has_email, 'admin must still see email on listing — needed for administrative workflows'
+    assert has_name,  'admin must still see name on listing — needed for administrative workflows'
   end
 
   # ----- phase v2 — /api/last_subscribed is public-minimum --------------------
