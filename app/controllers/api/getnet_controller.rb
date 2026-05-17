@@ -6,14 +6,12 @@ class API::GetnetController < API::PaymentsController
   require 'getnet/card'
   require 'getnet/helper'
 
-  # `sdk_test` performs a one-off OAuth handshake against Getnet and only
-  # returns a boolean — no PII, no state. The other actions handle real
-  # payment flows and must be locked to the current user.
-  before_action :restrict_to_admin, only: :sdk_test
   before_action :enforce_customer_is_current_user, only: %i[token_card create_payment confirm_payment]
   before_action :require_cart_items, only: %i[create_payment confirm_payment]
 
   def sdk_test
+    str = 'fab-manager'
+
     client = Getnet::Authentication.new(base_url: params[:endpoint], client_id: params[:client_id], client_secret: params[:client_secret])
     res = client.get_token
 
@@ -80,13 +78,6 @@ class API::GetnetController < API::PaymentsController
 
   def on_payment_success(order_id, cart)
     super(order_id, 'GetNet::Order', cart)
-  end
-
-  # `sdk_test` is a diagnostic endpoint — it exercises Getnet credentials
-  # from the settings page. Restricting to admins prevents arbitrary
-  # logged-in members from probing/credential-testing the Getnet gateway.
-  def restrict_to_admin
-    head :forbidden unless current_user&.admin?
   end
 
   # All payment actions on this controller MUST associate the operation

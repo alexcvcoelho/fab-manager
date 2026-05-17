@@ -32,20 +32,20 @@ Regressão: `test/integration/security/idor_show_actions_test.rb` (9 testes).
 
 **Commit 2 — `(security) restrict Getnet endpoints to current_user and require cart context`**
 
-`API::GetnetController` herdava apenas `authenticate_user!`. Member qualquer podia:
-- Probar credenciais Getnet via `sdk_test` (agora **admin-only**)
-- Tokenizar cartão com `customer_id` arbitrário (validation oracle + tokenização cross-user; agora forçado a `current_user.id`)
-- Crashar `create_payment`/`confirm_payment` com NoMethodError (177KB de stack HTML) — agora 422 limpo via `require_cart_items`
+`API::GetnetController` herdava apenas `authenticate_user!`. Achados do pentest (item #13):
+- `token_card` aceitava `customer_id` arbitrário (validation oracle + tokenização cross-user). Fix: novo `enforce_customer_is_current_user` rejeita mismatch; o payload Getnet sempre usa `current_user.id`.
+- `create_payment` / `confirm_payment` crashavam com NoMethodError sem `cart_items` (177KB de stack). Fix: `require_cart_items` retorna 422 limpo.
 
-Regressão: `test/integration/security/getnet_authz_test.rb` (6 testes).
+Regressão: `test/integration/security/getnet_authz_test.rb` (4 testes — só os vetores do pentest, sem expandir pra `sdk_test` que não estava no relatório).
 
 **Commit 3 — `(security) validate and sanitize user-controlled text fields (XSS hardening)`**
 
-`PUT /api/members/:id` aceitava `<script>` / `<svg onload>` em `username`, `first_name`, `last_name`, `interest`, etc. Apesar do Angular `{{ }}` escapar, os valores reaching mailers (10+ templates), PDFs gerados, e `publicProfile.html.erb` que usa `ng-bind-html` em `interest`/`software_mastered`.
+`PUT /api/members/:id` aceitava `<script>` / `<svg onload>` em `username`, `first_name`, `last_name` (item #22). Apesar do Angular `{{ }}` escapar, os valores chegam a mailers (10+ templates), PDFs gerados, e `publicProfile.html.erb` que usa `ng-bind-html`.
 
-- **Profile**: `NAME_FORMAT = /\A[\p{L}\p{N}\s'.\-,()]+\z/u` aplicado a `first_name`, `last_name`, `social_name`, `mother_name`. Aceita `João D'Ávila`, `Silva-Santos`, `Maria José D'Ávila`, `João (Joca)`. Rejeita HTML delimiters.
-- **Profile**: `before_validation :sanitize_attributes` extendido para `strip_tags` em campos free-form (`interest`, `software_mastered`, `note`, `website`, `job`, `street`, `complement`, `neighborhood`, `rg`, `rg_issuing_organization`).
+- **Profile**: `NAME_FORMAT = /\A[\p{L}\p{N}\s'.\-,()]+\z/u` aplicado **apenas a `first_name` e `last_name`** (os campos que o pentest exerceu). Aceita `João D'Ávila`, `Silva-Santos`. Rejeita HTML delimiters.
 - **User#username**: `/\A[a-zA-Z0-9._\-]+\z/`.
+
+Outros campos (`social_name`, `mother_name`, `interest`, `software_mastered`, etc.) **não foram tocados** — não foram exercidos no pentest e endurecer global sem evidência aumenta risco de quebrar users existentes. Se aparecerem em report futuro, harden cirúrgico ali.
 
 Regressão: `test/integration/security/xss_hardening_test.rb` (4 testes).
 
@@ -53,7 +53,7 @@ Regressão: `test/integration/security/xss_hardening_test.rb` (4 testes).
 ```ruby
 Profile.find_each { |p| puts p.id unless p.valid? }
 ```
-Se mais de ~5 profiles falham, ajustar `NAME_FORMAT` ou hot-fix em bulk antes do deploy.
+Se houver IDs no output, ajustar `NAME_FORMAT` ou hot-fix em bulk antes do deploy.
 
 ### Itens do pentest 2026-05-17 NÃO cobertos por esta rodada (decisão Alex)
 
