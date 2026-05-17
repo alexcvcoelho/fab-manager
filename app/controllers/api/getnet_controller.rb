@@ -6,9 +6,14 @@ class API::GetnetController < API::PaymentsController
   require 'getnet/card'
   require 'getnet/helper'
 
-  def sdk_test
-    str = 'fab-manager'
+  # `sdk_test` performs a one-off OAuth handshake against Getnet and only
+  # returns a boolean — no PII, no state. The other actions handle real
+  # payment flows and must be locked to the current user.
+  before_action :restrict_to_admin, only: :sdk_test
+  before_action :enforce_customer_is_current_user, only: %i[token_card create_payment confirm_payment]
+  before_action :require_cart_items, only: %i[create_payment confirm_payment]
 
+  def sdk_test
     client = Getnet::Authentication.new(base_url: params[:endpoint], client_id: params[:client_id], client_secret: params[:client_secret])
     res = client.get_token
 
@@ -18,7 +23,7 @@ class API::GetnetController < API::PaymentsController
   end
 
   def token_card
-    payload = GetNet::Helper.card_token(params[:card_number], params[:customer_id])
+    payload = GetNet::Helper.card_token(params[:card_number], current_user.id)
     client = Getnet::Card.new
     res = client.create_token(payload)
 
@@ -30,7 +35,7 @@ class API::GetnetController < API::PaymentsController
   def create_payment
     cart = shopping_cart
     amount = debit_amount(cart)
-    @id = GetNet::Helper.generate_ref(params[:cart_items], params[:customer_id])
+    @id = GetNet::Helper.generate_ref(params[:cart_items], current_user.id)
     @card = params[:card]
 
     client = Getnet::Card.new
@@ -75,5 +80,32 @@ class API::GetnetController < API::PaymentsController
 
   def on_payment_success(order_id, cart)
     super(order_id, 'GetNet::Order', cart)
+  end
+
+  # `sdk_test` is a diagnostic endpoint — it exercises Getnet credentials
+  # from the settings page. Restricting to admins prevents arbitrary
+  # logged-in members from probing/credential-testing the Getnet gateway.
+  def restrict_to_admin
+    head :forbidden unless current_user&.admin?
+  end
+
+  # All payment actions on this controller MUST associate the operation
+  # with the current user. The pentest of 2026-05-17 found that a
+  # `customer_id` from request parameters was being forwarded to Getnet
+  # without checking it matched `current_user.id` — allowing one member
+  # to tokenize cards / create payments under another user's identity.
+  # See doc/security/pentest-2026-05-17.md item #13.
+  def enforce_customer_is_current_user
+    return if params[:customer_id].blank? || params[:customer_id].to_i == current_user.id
+
+    head :forbidden
+  end
+
+  # `create_payment` / `confirm_payment` must always be invoked in the
+  # context of a non-empty cart. Without this guard, the controller
+  # crashes (NoMethodError on nil) on requests that arrive without a
+  # cart, which leaks a stack trace; this rejects them cleanly.
+  def require_cart_items
+    head :unprocessable_entity if params[:cart_items].blank?
   end
 end
