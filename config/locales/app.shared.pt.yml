@@ -173,6 +173,7 @@ pt:
         themes: "Temas"
         tags: "Tags"
         save_as_draft: "Salvar como rascunho"
+        status: "Status do projeto"
       #button to book a machine reservation
       reserve_button:
         book_this_machine: "Reservar essa máquina"
