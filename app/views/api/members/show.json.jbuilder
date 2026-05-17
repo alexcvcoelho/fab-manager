@@ -3,37 +3,49 @@
 requested_current = (current_user and current_user.id == @member.id)
 
 json.partial! 'api/members/member', member: @member
-json.extract! @member, :uid, :slug, :is_allow_contact, :is_allow_newsletter
+unless @restricted_member_show
+  json.extract! @member, :uid, :slug, :is_allow_contact, :is_allow_newsletter
+end
 
-json.training_ids @member.statistic_profile.training_ids
-json.trainings @member.trainings do |t|
-  json.id t.id
-  json.name t.name
-end
-json.training_reservations @member.reservations.where(reservable_type: 'Training').map(&:slots_reservations).flatten do |sr|
-  json.id sr.id
-  json.start_at sr.slot.start_at
-  json.end_at sr.slot.end_at
-  json.reservable sr.reservation.reservable
-  json.reservable_type 'Training'
-  json.is_valid @member.statistic_profile.training_ids.include?(sr.reservation.reservable_id)
-  json.canceled_at sr.canceled_at
-end
-json.machine_reservations @member.reservations.where(reservable_type: 'Machine').map(&:slots_reservations).flatten do |sr|
-  json.id sr.id
-  json.start_at sr.slot.start_at
-  json.end_at sr.slot.end_at
-  json.reservable sr.reservation.reservable
-  json.reservable_type 'Machine'
-  json.canceled_at sr.canceled_at
-end
-json.space_reservations @member.reservations.where(reservable_type: 'Space').map(&:slots_reservations).flatten do |sr|
-  json.id sr.id
-  json.start_at sr.slot.start_at
-  json.end_at sr.slot.end_at
-  json.reservable sr.reservation.reservable
-  json.reservable_type 'Space'
-  json.canceled_at sr.canceled_at
+if @restricted_member_show
+  # Public-card view: only show training titles, no reservation history
+  # (which would leak the member's schedule and habits).
+  json.trainings @member.trainings do |t|
+    json.id t.id
+    json.name t.name
+  end
+else
+  json.training_ids @member.statistic_profile.training_ids
+  json.trainings @member.trainings do |t|
+    json.id t.id
+    json.name t.name
+  end
+  reservations = @member.reservations.preload(slots_reservations: [:slot, reservation: :reservable])
+  json.training_reservations reservations.select { |r| r.reservable_type == "Training" }.map(&:slots_reservations).flatten do |sr|
+    json.id sr.id
+    json.start_at sr.slot.start_at
+    json.end_at sr.slot.end_at
+    json.reservable sr.reservation.reservable
+    json.reservable_type 'Training'
+    json.is_valid @member.statistic_profile.training_ids.include?(sr.reservation.reservable_id)
+    json.canceled_at sr.canceled_at
+  end
+  json.machine_reservations reservations.select { |r| r.reservable_type == "Machine" }.map(&:slots_reservations).flatten do |sr|
+    json.id sr.id
+    json.start_at sr.slot.start_at
+    json.end_at sr.slot.end_at
+    json.reservable sr.reservation.reservable
+    json.reservable_type 'Machine'
+    json.canceled_at sr.canceled_at
+  end
+  json.space_reservations reservations.select { |r| r.reservable_type == "Space" }.map(&:slots_reservations).flatten do |sr|
+    json.id sr.id
+    json.start_at sr.slot.start_at
+    json.end_at sr.slot.end_at
+    json.reservable sr.reservation.reservable
+    json.reservable_type 'Space'
+    json.canceled_at sr.canceled_at
+  end
 end
 
 json.all_projects @member.all_projects do |project|
@@ -70,35 +82,37 @@ json.all_projects @member.all_projects do |project|
     end
   end
 end
-json.events_reservations @member.reservations.where(reservable_type: 'Event').joins(:slots).order('slots.start_at asc').map(&:slots_reservations).flatten do |sr|
-  json.id sr.id
-  json.start_at sr.slot.start_at
-  json.end_at sr.slot.end_at
-  json.nb_reserve_places sr.reservation.nb_reserve_places
-  json.tickets sr.reservation.tickets do |t|
-    json.booked t.booked
-    json.price_category do
-      json.name t.event_price_category.price_category.name
+unless @restricted_member_show
+  json.events_reservations @member.reservations.where(reservable_type: 'Event').joins(:slots).order('slots.start_at asc').map(&:slots_reservations).flatten do |sr|
+    json.id sr.id
+    json.start_at sr.slot.start_at
+    json.end_at sr.slot.end_at
+    json.nb_reserve_places sr.reservation.nb_reserve_places
+    json.tickets sr.reservation.tickets do |t|
+      json.booked t.booked
+      json.price_category do
+        json.name t.event_price_category.price_category.name
+      end
     end
+    json.reservable sr.reservation.reservable
+    json.reservable_type 'Event'
+    json.canceled_at sr.canceled_at
   end
-  json.reservable sr.reservation.reservable
-  json.reservable_type 'Event'
-  json.canceled_at sr.canceled_at
+  json.invoices @member.invoices.order('reference DESC') do |i|
+    json.id i.id
+    json.reference i.reference
+    json.total i.total / 100.00
+    json.is_avoir i.is_a?(Avoir)
+    json.date i.is_a?(Avoir) ? i.avoir_date : i.created_at
+  end
+  json.tag_ids @member.tag_ids
+  json.tags @member.tags do |t|
+    json.id t.id
+    json.name t.name
+  end
+  json.merged_at @member.merged_at
 end
-json.invoices @member.invoices.order('reference DESC') do |i|
-  json.id i.id
-  json.reference i.reference
-  json.total i.total / 100.00
-  json.is_avoir i.is_a?(Avoir)
-  json.date i.is_a?(Avoir) ? i.avoir_date : i.created_at
-end
-json.tag_ids @member.tag_ids
-json.tags @member.tags do |t|
-  json.id t.id
-  json.name t.name
-end
-json.merged_at @member.merged_at
-if @operator.privileged?
+if @operator&.privileged? && !@restricted_member_show
   json.profile_attributes do
     json.note @member.profile.note
   end

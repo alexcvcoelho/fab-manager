@@ -103,12 +103,15 @@ class Members::MembersService
     params
   end
 
-  def self.last_registered(limit)
+  # `last_subscribed` is a public endpoint. The limit MUST be fixed server-side —
+  # accepting it as a parameter (former signature) allowed an unauthenticated
+  # caller to request the entire member base. Mirrors upstream fa5489ae6.
+  def self.last_registered
     query = User.active.with_role(:member)
                 .includes(:statistic_profile, profile: [:user_avatar])
                 .where('is_allow_contact = true AND confirmed_at IS NOT NULL')
                 .order('created_at desc')
-                .limit(limit)
+                .limit(10)
 
     # remove unmerged profiles from list
     members = query.to_a

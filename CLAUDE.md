@@ -97,3 +97,16 @@ Some upstream concepts are relabeled in the UI for Firjan (e.g. **"Space" → "M
 2. Default to **edit existing services** rather than creating new ones; only add to `app/services/firjan/` when the logic is genuinely Firjan-only with no upstream analogue.
 3. For new payment gateways or report fields, mirror the existing Getnet/PagSeguro patterns — don't invent a new structure.
 4. Update locales in `config/locales/app.pt-BR.yml` (and `app.en.yml` to keep Crowdin happy) when adding user-facing strings; do not hardcode pt-BR strings in views or components.
+
+## DBeaver MCP — read-only production database access
+
+The project is configured (`.mcp.json`, gitignored) with the `dbeaver-mcp-server` MCP pointing at the DBeaver workspace at `C:\Program Files\DBeaver\workspace`. Use the **`Fabmanager Prd`** connection to query the `fablab_production` database.
+
+**Hard rule: SELECT-only.** This database serves real members of the Firjan Fab Lab and contains LGPD-protected PII (CPF, RG, mother's name, address, IP). The MCP is started with `DBEAVER_READ_ONLY=true` and `.mcp.json` is gitignored to keep config per-developer.
+
+- **Allowed:** `SELECT`, `EXPLAIN`, `SHOW`, `\d`/`\dt` style introspection.
+- **Forbidden:** `INSERT`, `UPDATE`, `DELETE`, `TRUNCATE`, `DROP`, `CREATE`, `ALTER`, `GRANT`, `REVOKE`, `COPY ... FROM`, function definitions, anything DDL/DML.
+- **No bulk dumps.** Limit queries (`LIMIT 100`); never export the full `users`/`profiles`/`invoicing_profiles` tables.
+- **PII handling:** if a query returns a member's CPF/RG/mother_name/address/IP, treat the result as confidential — never echo it back into a commit message, code comment, log file, or generated doc. When you must reference a member in writing, use the **id** only.
+
+If a workflow needs writes (corrections, cleanups), do it in DBeaver Desktop GUI manually with full review, never through the MCP.

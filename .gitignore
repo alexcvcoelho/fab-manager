@@ -78,3 +78,7 @@ yarn-debug.log*
 yarn-debug.log*
 .yarn-integrity
 .tool-versions
+
+# Per-developer Claude Code configuration (MCP servers, local prefs)
+.mcp.json
+.claude/

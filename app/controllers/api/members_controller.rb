@@ -16,18 +16,28 @@ class API::MembersController < API::APIController
     # remove unmerged profiles from list
     @members = @query.to_a
     @members.delete_if(&:need_completion?)
+    # Non-privileged callers only see the minimum required fields in the index
+    # (no email/phone enumeration). Mirrors upstream fa5489ae6.
+    @restricted_member_index = !current_user.privileged?
   end
 
   def last_subscribed
-    @query, @members = Members::MembersService.last_registered(params[:last])
-
-    @requested_attributes = ['profile']
+    @query, @members = Members::MembersService.last_registered
+    # Public endpoint — render the minimal projection (name + avatar only).
+    # Mirrors upstream fa5489ae6.
+    @public_last_subscribed = true
     render :index
   end
 
   def show
     @member = User.friendly.find(params[:id])
     authorize @member
+    # Restrict PII for non-privileged callers viewing someone else's profile.
+    # Self viewing self is NOT restricted — the member must keep being able
+    # to see and edit their own CPF/RG/address. This is a Firjan adaptation
+    # of upstream fa5489ae6, which restricted self too (acceptable for them
+    # because their schema doesn't store national IDs).
+    @restricted_member_show = !current_user.privileged? && current_user.id != @member.id
   end
 
   def create

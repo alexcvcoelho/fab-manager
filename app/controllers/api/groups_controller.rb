@@ -5,8 +5,15 @@
 class API::GroupsController < API::APIController
   before_action :authenticate_user!, except: :index
 
+  # `index` stays public on purpose: the unauthenticated signup modal calls it
+  # to populate the group picker (Standard / Student / Outros / …). What we
+  # gate is the administrative metadata (members count) — that has no business
+  # being exposed to anonymous callers nor to regular members, and was the
+  # vector flagged by the Firjan security team's audit (member 1940 reading
+  # group membership counts via the same logged session).
   def index
     @groups = GroupService.list(params)
+    @restricted_groups_index = !current_user&.privileged?
   end
 
   def create

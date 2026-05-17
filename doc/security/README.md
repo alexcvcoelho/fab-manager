@@ -2,13 +2,62 @@
 
 Diretório de artefatos da Task 2 (maio/2026): auditoria e correção de autorização no Fab-manager Firjan.
 
-## Entrega desta branch (resumo)
+## Rodadas
+
+| Rodada | Branch | Status | Entrega |
+|---|---|---|---|
+| v1 | `feat/firjan-security-idor` → squash em `feat/firjan-report` (`f8f3d1675`) | ✅ Em produção | Fix `UserPolicy#show?` + baseline IDOR + analisador estático |
+| v2 | `feat/firjan-security-idor-v2` | 🚧 Em revisão | Patch upstream `fa5489ae6` adaptado + `groups` + `projects` |
+
+## Entrega da rodada v2 (em aberto)
+
+Reporte do Ramadan/Claupper em 2026-05-17 (pós-deploy da v1): IDOR persiste em `/api/members/:id` e `/api/groups`. Reproduzido com sessão do user `1940` (cenos61984@7novels.com, role `member`).
+
+Investigação: o fix v1 da `UserPolicy#show?` está deployado e bloqueia o caso `member→outro-member` em `show`. O que o pentest está vendo é:
+
+1. **`GET /api/members` (index) + `GET /api/last_subscribed/:n`** entregam email/telefone de toda a base opt-in para qualquer caller logado — vetor de **enumeração em massa**, não exposto via `show` mas presente na listagem.
+2. **`GET /api/groups`** expõe contagem de membros por grupo (`users.count`) a qualquer caller (anônimo no signup modal + member logado).
+
+> **Sobre `/api/projects/:id`:** chegou a ser tratado nesta rodada (commits intermediários adicionavam `authorize` + `ProjectPolicy#show?`), mas **revertido em 2026-05-17 por decisão do Alex**. A listagem e a visualização de projetos é **intencionalmente pública** no Fab-manager — funciona como portfólio do fablab e não é IDOR. Drafts visíveis a quem souber o slug é comportamento aceito; quem não é autor/colaborador não pode editar (já coberto por `ProjectPolicy#update?`).
+
+**Achado importante:** o upstream `sleede/fab-manager` lançou em 2026-03-31 o commit `fa5489ae6 (security) restrict member api personal data` cobrindo exatamente o item (1). Aproveitamos o mecanismo e adaptamos para os campos extras Firjan (CPF, RG, mother_name, endereço, financial_responsible_*) e para a condição de "self não restringe" — sem isso o member não consegue ver o próprio CPF na tela de edição de perfil.
+
+### Mudanças desta rodada
+
+| Frente | Arquivo | Mudança |
+|---|---|---|
+| 1) Members `show`/index/`last_subscribed` | `app/controllers/api/members_controller.rb` | `@restricted_member_show = !current_user.privileged? && current_user.id != @member.id` (self ou privileged → não restringe). `@restricted_member_index = !current_user.privileged?`. `@public_last_subscribed = true` para a rota pública. |
+| | `app/services/members/members_service.rb` | `last_registered` sem parâmetro, limite fixo 10 (era controlado pelo cliente — DoS de enumeração). |
+| | `app/views/api/members/_member.json.jbuilder` | PII (CPF, RG, mother_name, endereço, IP, financial_responsible_*, invoicing, statistic, subscription, credits, etc.) envolvida em `unless @restricted_member_show`. |
+| | `app/views/api/members/index.json.jbuilder` | `email` permanece para logados (necessário em fluxos admin), `phone` só para privileged. Branch `@public_last_subscribed` entrega só nome + avatar. |
+| | `app/views/api/members/show.json.jbuilder` | `reservations`/`invoices`/`tags`/`merged_at`/etc. atrás de `unless @restricted_member_show`. |
+| 2) Groups | `app/controllers/api/groups_controller.rb` | `@restricted_groups_index = !current_user&.privileged?`. Endpoint segue público (necessário ao signup modal). |
+| | `app/views/api/groups/_group.json.jbuilder` | `users.count` envolvido em `unless @restricted_groups_index`. |
+
+### Testes de regressão adicionados
+
+| Arquivo | Cobre |
+|---|---|
+| `test/integration/members/as_member_test.rb` (expandido) | Member não vê phone na listagem; admin continua vendo; `last_subscribed` nunca devolve email; cap server-side de 10; self continua vendo próprio CPF/endereço. |
+| `test/integration/groups/index_test.rb` (novo) | Anon e member não veem `users.count`; admin vê. |
+
+### Decisão sobre `is_allow_contact`
+
+Default no banco (`true` desde 2014) e no Angular controller (`$scope.user.is_allow_contact: true`) **continua intocado**. A mudança de default impacta o diretório público de membros (`Members::ListService` e `Members::MembersService`) e é decisão de produto/LGPD da Firjan, não de patch técnico. Após esta rodada, o `is_allow_contact` segue funcionando como flag de "aparece no diretório" — ele não regrança leitura de PII nem na `show?` (fechado na v1) nem nas views (fechado na v2 pela minimização).
+
+### Pós-deploy
+
+- [ ] Felipe agendar deploy de `feat/firjan-security-idor-v2` em janela combinada.
+- [ ] Após deploy: confirmar com Claupper/Ramadan que os 3 vetores estão fechados (re-rodar o teste do user 1940 e checar `users.count` em groups).
+- [ ] Excluir user 1940 (cenos61984@7novels.com, slug `tedede`) da produção — pendência ainda aberta da v1.
+
+## Entrega da rodada v1 (em produção)
 
 - ✅ **`UserPolicy#show?` corrigido** — vetor IDOR de `GET /api/members/:id` reportado pelo pentest está fechado. Validado em dev local apontando para o DB de produção em 2026-05-12.
 - ✅ **Teste de regressão** em `test/integration/members/as_member_test.rb` para impedir que rebases futuros do upstream reintroduzam a cláusula vulnerável.
 - ✅ **Baseline da superfície de IDOR** — analisador estático reutilizável (`audit_idor_baseline.rb`) + inventário gerado (`inventory_2026-05-07.md`) cobrindo 88 controllers / 341 actions / 67 policies.
 - ❌ **`verify_authorized` global tentado e revertido** — quebrava todos os endpoints porque a exceção levantada não era capturada pelo rescue existente. Detalhes em "Status das fases" abaixo.
-- ⏳ **`/api/projects/:id` e `supporting_document_files#show`** — também vulneráveis, ficam para próxima rodada de horas. Plano e contexto registrados nesta doc.
+- ⏳ **`/api/projects/:id`** — investigado e descartado como IDOR em 2026-05-17. Listagem e show de projects são **intencionalmente públicos** (portfólio do fablab). Edição segue restrita ao autor/colaborador/admin via `ProjectPolicy#update?`. Não é vetor de vazamento de PII.
 
 ## Origem
 
@@ -16,8 +65,10 @@ Vulnerabilidade reportada por pentest externo (Rhamadan De Paiva Leal) e repassa
 
 **Endpoints confirmados como vulneráveis:**
 
-- `GET /api/members/:id` — **corrigido nesta entrega.** Retornava perfil completo (CPF, RG, nome da mãe, endereço, IP, etc.) de qualquer membro com `is_allow_contact: true` para qualquer usuário autenticado.
-- `GET /api/projects/:id` — IDOR confirmado pelo pentester. **Não tratado nesta entrega**, fica para próxima rodada.
+- `GET /api/members/:id` — corrigido na rodada **v1** (`UserPolicy#show?`).
+- `GET /api/members` (listagem) e `GET /api/last_subscribed/:n` — enumeração massiva de email/telefone reportada pós-v1; tratada na **v2** com o patch upstream `fa5489ae6` adaptado.
+- `GET /api/groups` — exposição de `users.count` reportada pós-v1; tratada na **v2** restringindo a admin/manager.
+- `GET /api/projects/:id` — chegou a aparecer no report inicial do Claupper como suspeita, mas após investigação foi **descartado como vetor**: listagem e show de projects são intencionalmente públicos (portfólio do fablab), e a edição segue protegida por `ProjectPolicy#update?`.
 
 ## Arquivos
 
@@ -134,13 +185,11 @@ end
 
 Comportamento confirmado: o vetor reportado pelo pentest está fechado para o endpoint `members#show`.
 
-## Pendências em aberto (escopo intencionalmente fora desta entrega)
+## Pendências em aberto (após rodada v2)
 
-A entrega cobre o **vetor confirmado pelo pentest** (members#show). Os itens abaixo permanecem para uma próxima rodada de horas, em alinhamento com Claupper/Felipe:
+A v2 cobre os três vetores reportados pelo Ramadan/Claupper em 2026-05-17 (members listing/show, groups, projects). Os itens abaixo permanecem para rodadas futuras, em alinhamento com Claupper/Felipe:
 
-- **Default do `is_allow_contact`** — coluna do banco (default `true` desde a migration de 2014) e `$scope.user.is_allow_contact: true` em `app/frontend/src/javascript/controllers/application.js`. Mudar para `false` alinha com LGPD opt-in; impacta o diretório de membros.
-- **Serializer `show.json.jbuilder`** — admin/manager/self ainda recebem CPF, RG, nome da mãe, endereço, IP. Minimização LGPD pede revisão dos campos por necessidade real de exibição.
-- **Fase 3b — `ProjectPolicy` + `ProjectsController#show`** — segundo IDOR reportado pelo Claupper. `ProjectsController#show` faz `Project.friendly.find(params[:id])` sem `authorize` e sem aplicar o `policy_scope`; permite ler drafts alheios. Fix: adicionar `authorize @project` no controller e definir `show?` no policy (público para `state == 'published'`, autor/colaborador/admin para drafts).
+- **Default do `is_allow_contact`** — coluna do banco (default `true` desde a migration de 2014) e `$scope.user.is_allow_contact: true` em `app/frontend/src/javascript/controllers/application.js`. Mudar para `false` alinha com LGPD opt-in; impacta o diretório de membros. Após a v2 isso passa de vetor de IDOR para decisão de produto pura — a minimização já está aplicada nas views.
 - **Fase 3c — `supporting_document_files#show`** — achado adicional da baseline. Action sem `authorize` em recurso de documentos pessoais (RG, CPF, comprovante). Severidade LGPD igual ou maior que o caso `members#show`.
 - **Fase 3d** — Demais actions 🔴 da [`inventory_2026-05-07.md`](inventory_2026-05-07.md) ainda não tratadas (`abuses#create`, `admins#destroy`, `notifications#update`, `trainings_pricings#update`).
 - **Fase 3e** — Sweep dos Firjan custom controllers (Getnet, PagSeguro, brazillian_data — todos 🟢 no baseline, mas conferência manual recomendada).
