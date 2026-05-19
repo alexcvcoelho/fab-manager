@@ -9,6 +9,17 @@ Diretório de artefatos da Task 2 (maio/2026): auditoria e correção de autoriz
 | v1 | `feat/firjan-security-idor` → squash em `feat/firjan-report` (`f8f3d1675`) | ✅ Em produção | Fix `UserPolicy#show?` + baseline IDOR + analisador estático |
 | v2 | `feat/firjan-security-idor-v2` | 🚧 Em revisão | Patch upstream `fa5489ae6` adaptado + `groups` |
 | v3 | `feat/firjan-security-idor-v2` (continuação) | 🚧 Em revisão | Achados do pentest browser-driven 2026-05-17: IDOR em show actions + Getnet authz + XSS hardening |
+| v4 | `feat/firjan-security-idor-v2` (continuação) | 🚧 Em revisão | Respostas do Claupper às Q1/Q2/Q3 de `resposta-claupper-2026-05-17.md` — search mínimo 3 chars, Devise Timeoutable + session fingerprint, e documentação de risco aceito |
+
+## Riscos aceitos pela Firjan
+
+### `/api/translations/pt/app.admin` acessível sem autenticação
+
+O endpoint público `/api/translations/:locale/:scope` retorna todas as strings i18n do scope solicitado. Para `app.admin` (e similares), os labels de UI da seção administrativa ficam acessíveis a qualquer caller — incluindo nomes de campos de configuração dos gateways de pagamento (`payzen_password`, `client_secret`, `seller_id`, `pagseguro_token` etc.).
+
+**Não vaza valores** (a string `"Senha"` é exposta, não a senha em si), apenas a estrutura da UI admin.
+
+**Decisão de produto (Claupper, 2026-05-17):** risco aceito como baixo. Restringir o scope `app.admin` a usuários privileged forçaria refator no bootstrap do frontend Angular (carregar bundles diferentes de tradução conforme role), com custo desproporcional ao ganho de segurança. O endpoint segue público.
 
 ## Entrega da rodada v3 (em aberto)
 
