@@ -9,8 +9,15 @@ redis_connection_url = ENV.fetch('REDIS_CONNECTION_URL', "redis://#{redis_host}:
 
 Rails.application.config.session_store :redis_session_store,
                                        redis: {
-                                         expire_after: 14.days,  # cookie expiration
-                                         ttl: 14.days,           # Redis expiration, defaults to 'expire_after'
+                                         # Q2 in doc/security/resposta-claupper-2026-05-17.md:
+                                         # reduced from 14.days to 8.hours (workday). After this
+                                         # absolute window the session is dropped regardless of
+                                         # activity, which caps how long a stolen cookie can be
+                                         # used. The inactivity floor lives in devise.rb's
+                                         # `timeout_in`; the device-binding floor lives in
+                                         # ApplicationController#validate_session_fingerprint.
+                                         expire_after: 8.hours,  # cookie expiration
+                                         ttl: 8.hours,           # Redis expiration, defaults to 'expire_after'
                                          key_prefix: 'fabmanager:session:',
                                          url: redis_connection_url
                                          #  password: redis_password,

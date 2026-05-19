@@ -9,8 +9,13 @@ class User < ApplicationRecord
   include UserRessourcesConcern
   # Include default devise modules. Others available are:
   # :lockable, :timeoutable and :omniauthable
+  # `:timeoutable` enabled per Q2 in doc/security/resposta-claupper-2026-05-17.md
+  # (Claupper, 2026-05-17): forces re-login after `Devise.timeout_in`
+  # minutes of inactivity. Combined with the lower `expire_after` in
+  # session_store.rb and the fingerprint check in ApplicationController,
+  # this caps the window during which a stolen session cookie can be used.
   devise :database_authenticatable, :registerable, :recoverable, :rememberable, :trackable, :validatable,
-         :confirmable
+         :confirmable, :timeoutable
   rolify
 
   extend FriendlyId
