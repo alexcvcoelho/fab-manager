@@ -11,11 +11,25 @@ class ApplicationController < ActionController::Base
   respond_to :html, :json
 
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :validate_session_fingerprint, if: :user_signed_in?
   around_action :switch_locale
 
   # Globally rescue Authorization Errors in controller.
   # Returning 403 Forbidden if permission is denied
   rescue_from Pundit::NotAuthorizedError, with: :permission_denied
+
+  # Q2c in doc/security/resposta-claupper-2026-05-17.md: bind the session
+  # to the caller's IP /24 subnet + User-Agent at sign-in time. If the
+  # cookie is reused from a different network or with a different UA
+  # (the scenario Rhamadan exercised in the 2026-05-14 print), the
+  # session is dropped and the caller is forced to re-authenticate.
+  #
+  # The fingerprint is captured on the first authenticated request of
+  # each session — `validate_session_fingerprint` writes it when absent.
+  # Subsequent requests must match. The trade-off accepted by Claupper:
+  # mobile users moving between networks (e.g. 4G → home WiFi crossing a
+  # /24 boundary) will need to log in again.
+  SESSION_FINGERPRINT_KEY = :_session_fp
 
   def index; end
 
@@ -88,5 +102,50 @@ class ApplicationController < ActionController::Base
     yield
   ensure
     Bullet.enable = previous_value
+  end
+
+  private
+
+  def validate_session_fingerprint
+    expected = session[SESSION_FINGERPRINT_KEY]
+    current  = compute_session_fingerprint
+
+    if expected.blank?
+      # First authenticated request of this session — record the fingerprint.
+      session[SESSION_FINGERPRINT_KEY] = current
+      return
+    end
+
+    return if expected == current
+
+    # Mismatch: cookie was likely captured and replayed elsewhere.
+    # Sign the user out and clear the session.
+    sign_out current_user if respond_to?(:sign_out)
+    reset_session
+    respond_to do |format|
+      format.json { render json: { error: 'Session fingerprint mismatch' }, status: :unauthorized and return }
+      format.html { redirect_to '/users/sign_in' and return }
+      format.any  { head :unauthorized and return }
+    end
+  end
+
+  def compute_session_fingerprint
+    ip_part = ip_fingerprint_part(request.remote_ip.to_s)
+    ua_part = request.user_agent.to_s
+    Digest::SHA256.hexdigest("#{ip_part}|#{ua_part}")
+  end
+
+  # IPv4: keep the first 3 octets (/24 subnet). IPv6: keep the first 4
+  # hextets (/64 prefix). Anything that doesn't parse falls back to the
+  # raw string so we still bind to *something*.
+  def ip_fingerprint_part(raw_ip)
+    ip = IPAddr.new(raw_ip)
+    if ip.ipv4?
+      raw_ip.split('.').first(3).join('.')
+    else
+      raw_ip.split(':').first(4).join(':')
+    end
+  rescue IPAddr::InvalidAddressError, ArgumentError
+    raw_ip
   end
 end
