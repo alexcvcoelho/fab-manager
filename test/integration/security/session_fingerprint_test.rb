@@ -84,4 +84,53 @@ class SessionFingerprintTest < ActionDispatch::IntegrationTest
     assert_equal 200, response.status,
                  'movement within the same /24 (carrier-grade NAT) should not invalidate the session'
   end
+
+  # Production rollback path — see ApplicationController comment.
+  # When SKIP_SESSION_FINGERPRINT=true is set, only the UA component is
+  # used. Cross-subnet replay with the SAME UA is allowed (so admins
+  # behind Azure App Service's rotating load balancer keep their
+  # session); replay with a DIFFERENT UA is still rejected.
+  test 'SKIP_SESSION_FINGERPRINT=true allows cross-subnet replay with same UA' do
+    ENV['SKIP_SESSION_FINGERPRINT'] = 'true'
+
+    seed_headers = default_headers.merge(
+      'REMOTE_ADDR' => '192.168.1.10',
+      'HTTP_USER_AGENT' => 'Mozilla/5.0 (X11; Linux x86_64) Test/1.0'
+    )
+    get "/api/members/#{@member.id}", headers: seed_headers
+    assert_equal 200, response.status
+
+    # Same cookie, different /24 but same UA — must pass under UA-only mode
+    cross_subnet_headers = default_headers.merge(
+      'REMOTE_ADDR' => '10.0.0.10',
+      'HTTP_USER_AGENT' => 'Mozilla/5.0 (X11; Linux x86_64) Test/1.0'
+    )
+    get "/api/members/#{@member.id}", headers: cross_subnet_headers
+    assert_equal 200, response.status,
+                 'with SKIP_SESSION_FINGERPRINT=true cross-subnet + same UA must pass'
+  ensure
+    ENV.delete('SKIP_SESSION_FINGERPRINT')
+  end
+
+  test 'SKIP_SESSION_FINGERPRINT=true still rejects UA mismatch' do
+    ENV['SKIP_SESSION_FINGERPRINT'] = 'true'
+
+    seed_headers = default_headers.merge(
+      'REMOTE_ADDR' => '192.168.1.10',
+      'HTTP_USER_AGENT' => 'Mozilla/5.0 (X11; Linux x86_64) Test/1.0'
+    )
+    get "/api/members/#{@member.id}", headers: seed_headers
+    assert_equal 200, response.status
+
+    # Cookie replayed with curl from anywhere — different UA must still 401
+    forged_ua_headers = default_headers.merge(
+      'REMOTE_ADDR' => '192.168.1.10',
+      'HTTP_USER_AGENT' => 'curl/8.0.0'
+    )
+    get "/api/members/#{@member.id}", headers: forged_ua_headers
+    assert_equal 401, response.status,
+                 'UA mismatch must invalidate even under UA-only mode'
+  ensure
+    ENV.delete('SKIP_SESSION_FINGERPRINT')
+  end
 end

@@ -29,7 +29,26 @@ class ApplicationController < ActionController::Base
   # Subsequent requests must match. The trade-off accepted by Claupper:
   # mobile users moving between networks (e.g. 4G → home WiFi crossing a
   # /24 boundary) will need to log in again.
-  SESSION_FINGERPRINT_KEY = :_session_fp
+  #
+  # Operational override: set `SKIP_SESSION_FINGERPRINT=true` in the
+  # container env to **downgrade** the check to UA-only (drop the IP
+  # component). Used when the production reverse-proxy chain makes
+  # `request.remote_ip` unstable (Azure App Service load balancer
+  # rotating between requests of the same session) — in that scenario
+  # every admin request would otherwise 401.
+  #
+  # When the flag is ON, the fingerprint still binds the session to the
+  # User-Agent, so a cookie replayed via `curl` from the attacker's
+  # machine is still rejected. What's lost: the cross-network defense
+  # (same UA from a different IP no longer trips the check).
+  #
+  # We use a separate session key per regime so flipping the flag in
+  # either direction does NOT invalidate existing sessions — each
+  # regime seeds and validates its own key on the first request after
+  # the flip. The session cookie's 8h absolute window (session_store.rb)
+  # and Devise's 1h inactivity timeout still apply in both modes.
+  SESSION_FINGERPRINT_KEY = :_session_fp        # IP/24 + UA (strict mode)
+  SESSION_FINGERPRINT_KEY_UA = :_session_fp_ua  # UA-only (rollback mode)
 
   def index; end
 
@@ -53,7 +72,8 @@ class ApplicationController < ActionController::Base
     devise_parameter_sanitizer.permit(:sign_up,
                                       keys: [
                                         {
-                                          profile_attributes: %i[phone last_name first_name cpf interest software_mastered social_name origin_state origin_city zipcode street neighborhood number complement city state rg rg_date_emission rg_issuing_organization rg_issuing_state mother_name occupational_status education_level financial_responsible_name financial_responsible_cpf],
+                                          profile_attributes: %i[phone last_name first_name cpf interest software_mastered social_name
+                                                                 origin_state origin_city zipcode street neighborhood number complement city state rg rg_date_emission rg_issuing_organization rg_issuing_state mother_name occupational_status education_level financial_responsible_name financial_responsible_cpf],
                                           invoicing_profile_attributes: [
                                             organization_attributes: [:name, { address_attributes: [:address] }],
                                             user_profile_custom_fields_attributes: %i[profile_custom_field_id value],
@@ -78,9 +98,9 @@ class ApplicationController < ActionController::Base
 
   # Set the configured locale for each action (API call)
   # @see https://guides.rubyonrails.org/i18n.html
-  def switch_locale(&block)
+  def switch_locale(&)
     locale = params[:locale] || Rails.application.secrets.rails_locale
-    I18n.with_locale(locale, &block)
+    I18n.with_locale(locale, &)
   end
 
   # @return [User]
@@ -107,19 +127,24 @@ class ApplicationController < ActionController::Base
   private
 
   def validate_session_fingerprint
-    expected = session[SESSION_FINGERPRINT_KEY]
-    current  = compute_session_fingerprint
+    key, current = if session_fingerprint_ip_disabled?
+                     [SESSION_FINGERPRINT_KEY_UA, compute_session_fingerprint_ua_only]
+                   else
+                     [SESSION_FINGERPRINT_KEY, compute_session_fingerprint]
+                   end
+
+    expected = session[key]
 
     if expected.blank?
-      # First authenticated request of this session — record the fingerprint.
-      session[SESSION_FINGERPRINT_KEY] = current
+      # First request under the current regime — record the fingerprint.
+      session[key] = current
       return
     end
 
     return if expected == current
 
-    # Mismatch: cookie was likely captured and replayed elsewhere.
-    # Sign the user out and clear the session.
+    # Mismatch under the current regime: cookie was likely captured and
+    # replayed elsewhere. Sign the user out and clear the session.
     sign_out current_user if respond_to?(:sign_out)
     reset_session
     respond_to do |format|
@@ -129,10 +154,25 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  # Truthy values for SKIP_SESSION_FINGERPRINT: "true", "1", "yes".
+  # Anything else (including unset) keeps the strict (IP/24 + UA) mode.
+  # When truthy, only the UA component is used to bind the session.
+  def session_fingerprint_ip_disabled?
+    ActiveModel::Type::Boolean.new.cast(ENV.fetch('SKIP_SESSION_FINGERPRINT', false))
+  end
+
   def compute_session_fingerprint
     ip_part = ip_fingerprint_part(request.remote_ip.to_s)
     ua_part = request.user_agent.to_s
     Digest::SHA256.hexdigest("#{ip_part}|#{ua_part}")
+  end
+
+  # UA-only fingerprint used when SKIP_SESSION_FINGERPRINT is truthy.
+  # Empty IP slot is kept in the digest input so the hash space is
+  # disjoint from the strict-mode digest (defense against accidental
+  # collisions on tiny inputs).
+  def compute_session_fingerprint_ua_only
+    Digest::SHA256.hexdigest("|#{request.user_agent}")
   end
 
   # IPv4: keep the first 3 octets (/24 subnet). IPv6: keep the first 4

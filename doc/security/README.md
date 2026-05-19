@@ -11,6 +11,32 @@ Diretório de artefatos da Task 2 (maio/2026): auditoria e correção de autoriz
 | v3 | `feat/firjan-security-idor-v2` (continuação) | 🚧 Em revisão | Achados do pentest browser-driven 2026-05-17: IDOR em show actions + Getnet authz + XSS hardening |
 | v4 | `feat/firjan-security-idor-v2` (continuação) | 🚧 Em revisão | Respostas do Claupper às Q1/Q2/Q3 de `resposta-claupper-2026-05-17.md` — search mínimo 3 chars, Devise Timeoutable + session fingerprint, e documentação de risco aceito |
 
+## Override operacional do session fingerprint
+
+A checagem de `validate_session_fingerprint` (Q2c, em `ApplicationController`) pode ser **degradada** para UA-only via env var sem novo deploy de código:
+
+```
+SKIP_SESSION_FINGERPRINT=true
+```
+
+**Quando usar:** se em produção observarmos 401 em massa logo após o deploy da v4 e a causa raiz for o `request.remote_ip` oscilando atrás do proxy do Azure App Service (cada request volta de um IP diferente do load balancer, então o fingerprint nunca bate). Ligar a flag desconsidera o componente IP mas mantém o vínculo da sessão ao User-Agent.
+
+**Comportamento da flag:**
+- **OFF (padrão):** fingerprint = `SHA256(IP/24 + UA)`. Cookie replicado em qualquer outra rede ou outro UA é rejeitado.
+- **ON (rollback):** fingerprint = `SHA256(UA)`. Cookie replicado de outra rede mas no mesmo navegador passa; replay via `curl` (UA diferente) continua sendo rejeitado.
+
+A sessão usa chave distinta por regime (`:_session_fp` vs `:_session_fp_ua`), então **virar a flag em qualquer direção não desloga ninguém** — o próximo request semeia a chave do novo regime e segue normal.
+
+**O que continua valendo com a flag ON:**
+- `Devise.timeout_in = 1.hour` (Q2a — inatividade força re-login).
+- Session cookie absoluto de 8 horas (Q2b — `expire_after` em `config/initializers/session_store.rb`).
+- Cookie ainda `HttpOnly + Secure + SameSite=Lax`.
+- Detecção de UA mismatch (curl, bot, ferramenta de pentest).
+
+**O que para de valer:** cookie roubado e usado no MESMO navegador (mesmo UA string) de outra rede passa dentro da janela de 8h. Por isso a flag é **operacional**, não permanente — a saída correta é configurar `config.action_dispatch.trusted_proxies` com a faixa do proxy Azure e desligar a flag.
+
+Regressão: `test/integration/security/session_fingerprint_test.rb` (6 testes — 4 cobrem o modo estrito, 2 cobrem o modo UA-only incluindo "UA diferente continua sendo rejeitado").
+
 ## Riscos aceitos pela Firjan
 
 ### `/api/translations/pt/app.admin` acessível sem autenticação
