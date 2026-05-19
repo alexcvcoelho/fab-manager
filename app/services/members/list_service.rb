@@ -42,6 +42,17 @@ class Members::ListService
     end
 
     def search(current_user, query, subscription)
+      # Pentest 2026-05-17 (Rhamadan, Q1 in doc/security/resposta-claupper-2026-05-17.md):
+      # short queries like "a" caused mass enumeration because the regex
+      # filter would match any name containing the single letter; queries
+      # that decoded to only whitespace (e.g. "%20%20") skipped the loop
+      # entirely and returned every active member. Reject both cases.
+      normalized = query.to_s.gsub(/\s+/, ' ').strip
+      return [] if normalized.length < 3
+
+      words = normalized.downcase.split.select { |w| w.length >= 3 }
+      return [] if words.empty?
+
       members = User.includes(:profile, :statistic_profile, invoicing_profile: [:address])
                     .joins(:profile,
                            :statistic_profile,
@@ -53,7 +64,7 @@ class Members::ListService
                            'WHERE "statistic_profile_id" = "statistic_profiles"."id")')
                     .where("users.is_active = 'true'")
                     .limit(50)
-      query.downcase.split.each do |word|
+      words.each do |word|
         members = members.where('lower(f_unaccent(users.username)) ~ :search OR ' \
                                 'lower(f_unaccent(profiles.first_name)) ~ :search OR ' \
                                 'lower(f_unaccent(profiles.last_name)) ~ :search',
